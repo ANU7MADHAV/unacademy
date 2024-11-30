@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS slides (
+    id SERIAL PRIMARY KEY,
+    metadata TEXT NOT NULL,
+    created_at TIMESTAMP(0) WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS slides_images (
+    id SERIAL PRIMARY KEY,
+    slides_id INT NOT NULL REFERENCES slides(id),
+    url TEXT NOT NULL
+);
