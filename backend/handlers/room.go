@@ -78,3 +78,21 @@ func ListRoom() (*livekit.ListRoomsResponse, error) {
 
 	return rooms, nil
 }
+
+func DeleteRooms(room string) error {
+	roomClient, err := Initialize()
+
+	if err != nil {
+		println(err)
+	}
+
+	_, err = roomClient.DeleteRoom(context.Background(), &livekit.DeleteRoomRequest{
+		Room: room,
+	})
+
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	return nil
+}
