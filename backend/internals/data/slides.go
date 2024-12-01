@@ -15,7 +15,7 @@ type Slides struct {
 	CreatedAt time.Time
 }
 
-func (s SlidesModel) Insert(slides Slides) error {
+func (s *SlidesModel) Insert(slides Slides) error {
 	slides.CreatedAt = time.Now()
 	query := `
 	INSERT INTO slides (metadata,created_at)
@@ -28,14 +28,14 @@ func (s SlidesModel) Insert(slides Slides) error {
 	return s.DB.QueryRow(query, args...).Scan(&slides.Metadata, slides.ID, slides.CreatedAt)
 }
 
-func (s SlidesModel) Get(id int) (*Slides, error) {
+func (s *SlidesModel) Get(id int) (*Slides, error) {
 	return nil, nil
 }
 
-func (s SlidesModel) Update(slides *Slides) error {
+func (s *SlidesModel) Update(slides *Slides) error {
 	return nil
 }
 
-func (s SlidesModel) Delete(id int) error {
+func (s *SlidesModel) Delete(id int) error {
 	return nil
 }
