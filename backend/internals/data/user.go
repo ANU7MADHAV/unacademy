@@ -11,7 +11,7 @@ type UserRole string
 type User struct {
 	ID       int
 	Username string   `json:"username"`
-	Password []byte   `json:"password"`
+	Password string   `json:"password"`
 	Role     UserRole `json:"role"`
 }
 
@@ -25,33 +25,33 @@ type UserModel struct {
 }
 type Logininput struct {
 	Username string `json:"username"`
-	Password string `json:"password"`
+	Password []byte `json:"password"`
 }
 
 func (u UserModel) Insert(user *User) error {
 	query := `INSERT INTO users(username,password,role)
 			VALUES($1,$2,$3)
-			RETURNING ID,
+			RETURNING ID
 `
 
 	hashPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 
 	if err != nil {
-		println(err)
+		println("error during hash", err)
 	}
 
-	user.Password = hashPassword
+	user.Password = string(hashPassword)
 
 	args := []interface{}{user.Username, user.Password, user.Role}
 
 	return u.DB.QueryRow(query, args...).Scan(&user.ID)
 }
 
-func (u UserModel) SelectUser(user *User) error {
+func (u UserModel) SelectUser(username string, password string) error {
 
-	query := `SELECT id,username,password,role FROM users WHERE username = $1, RETURNING Password`
+	query := `SELECT id, username, password, role FROM users WHERE username = $1`
 
-	args := []interface{}{user.Username, user.Password}
+	args := []interface{}{username}
 
 	var storeUser User
 
@@ -62,7 +62,7 @@ func (u UserModel) SelectUser(user *User) error {
 		return err
 	}
 
-	err = bcrypt.CompareHashAndPassword(storeUser.Password, user.Password)
+	err = bcrypt.CompareHashAndPassword([]byte(storeUser.Password), []byte(password))
 
 	if err != nil {
 		println(err)
