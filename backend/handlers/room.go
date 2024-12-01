@@ -7,6 +7,7 @@ import (
 	"time"
 	"uncademy-app/internals/data"
 
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/livekit/protocol/livekit"
 	lksdk "github.com/livekit/server-sdk-go"
@@ -41,6 +42,10 @@ func CreateRoom(opts data.RoomOptions) (string, error) {
 	if opts.MaxEmpty == 0 {
 		opts.MaxEmpty = 10 * time.Second
 	}
+
+	uuid := uuid.New()
+
+	opts.Name = opts.Name + uuid.String()
 
 	roomClient, err := Initialize()
 
