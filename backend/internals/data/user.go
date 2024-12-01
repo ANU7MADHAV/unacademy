@@ -23,10 +23,6 @@ const (
 type UserModel struct {
 	DB *sql.DB
 }
-type Logininput struct {
-	Username string `json:"username"`
-	Password []byte `json:"password"`
-}
 
 func (u UserModel) Insert(user *User) error {
 	query := `INSERT INTO users(username,password,role)
