@@ -2,6 +2,7 @@ package data
 
 import (
 	"database/sql"
+	"fmt"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -37,6 +38,8 @@ func (u UserModel) Insert(user *User) error {
 	}
 
 	user.Password = string(hashPassword)
+
+	fmt.Println("user-password", user.Password)
 
 	args := []interface{}{user.Username, user.Password, user.Role}
 

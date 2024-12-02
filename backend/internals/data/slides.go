@@ -15,7 +15,7 @@ type Slides struct {
 	CreatedAt time.Time
 }
 
-func (s *SlidesModel) Insert(slides Slides) error {
+func (s SlidesModel) Insert(slides Slides) error {
 	slides.CreatedAt = time.Now()
 	query := `
 	INSERT INTO slides (metadata,created_at)
