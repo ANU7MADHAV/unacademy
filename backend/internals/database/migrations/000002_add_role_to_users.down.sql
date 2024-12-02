@@ -1,2 +1,2 @@
 ALTER TABLE users DROP COLUMN IF EXISTS role;
-ALTER TABLE users DROP CONSTRAINT constraint_name;
+
