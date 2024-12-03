@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { SubmitHandler, useForm } from "react-hook-form";
 import axios from "axios";
+import userUserStore from "@/src/store/authStore";
 
 enum Role {
   student = "student",
@@ -33,16 +34,25 @@ interface IFormInput {
 }
 
 export default function Signup() {
+  const [jwt, setJwt] = React.useState("");
+  const { username, setUsername } = userUserStore();
   const { register, handleSubmit, setValue } = useForm<IFormInput>();
+
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
     console.log("logged");
     const res = await axios.post(
       "http://localhost:8080/v1/user/register",
       data
     );
+    setUsername(data.username);
     const resData = res.data;
+    setJwt(resData);
     console.log(resData);
   };
+
+  React.useEffect(() => {
+    localStorage.setItem("jwt-token", jwt);
+  }, [jwt]);
 
   return (
     <Card className="w-[350px]">
