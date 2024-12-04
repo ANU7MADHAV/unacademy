@@ -1,14 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const VideoComponent = () => {
   const [stream, setStream] = useState<MediaStream | undefined>();
   const [camerBool, setCameraBool] = useState(true);
-  const [audiBool, setAudioBool] = useState(true);
+
   const myVideo = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     navigator.mediaDevices
-      .getUserMedia({ video: camerBool, audio: audiBool })
+      .getUserMedia({ video: camerBool, audio: true })
       .then((stream: MediaStream) => {
         setStream(stream);
         if (myVideo.current) {
@@ -20,7 +20,7 @@ const VideoComponent = () => {
         stream.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [camerBool, audiBool]);
+  }, [camerBool]);
 
   return (
     <div className="space-y-3">

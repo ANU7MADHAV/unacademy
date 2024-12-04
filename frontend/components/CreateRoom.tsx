@@ -14,9 +14,7 @@ import { Label } from "@/components/ui/label";
 import { SubmitHandler, useForm } from "react-hook-form";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import tokenStore from "@/src/store/tokenStore";
 import useTokenStore from "@/src/store/tokenStore";
-import { register } from "module";
 
 interface IFormInput {
   room: string;
@@ -26,7 +24,7 @@ interface IFormInput {
 export default function CreateRoom() {
   const router = useRouter();
   const { register, handleSubmit } = useForm<IFormInput>();
-  const { setToken } = useTokenStore();
+  const { token, setToken } = useTokenStore();
 
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
     const res = await axios.post("http://localhost:8080/v1/token/create", data);
@@ -39,6 +37,10 @@ export default function CreateRoom() {
       router.push(`/check-room/${data.room}`);
     }
   };
+
+  React.useEffect(() => {
+    localStorage.setItem("livekit-token", token);
+  }, [token]);
 
   return (
     <Card className="w-[350px]">

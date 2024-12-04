@@ -1,5 +1,4 @@
 import CheckRoom from "@/components/CheckRoom";
-
 import React from "react";
 
 const page = () => {

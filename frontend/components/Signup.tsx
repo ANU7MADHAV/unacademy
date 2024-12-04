@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,9 +17,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { SubmitHandler, useForm } from "react-hook-form";
-import axios from "axios";
 import userUserStore from "@/src/store/authStore";
+import axios from "axios";
+import * as React from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
 
 enum Role {
   student = "student",
@@ -35,7 +35,7 @@ interface IFormInput {
 
 export default function Signup() {
   const [jwt, setJwt] = React.useState("");
-  const { username, setUsername } = userUserStore();
+  const { setUsername } = userUserStore();
   const { register, handleSubmit, setValue } = useForm<IFormInput>();
 
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {

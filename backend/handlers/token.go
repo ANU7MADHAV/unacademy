@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/livekit/protocol/auth"
 )
@@ -27,7 +28,13 @@ func LivitKitTokenGeneration(input Token) (string, error) {
 		Room:     input.Room,
 	}
 
-	at.SetVideoGrant(grant).SetIdentity(input.Identity).SetValidFor(time.Hour)
+	identity := "anu"
+
+	uuid := uuid.New()
+
+	uuID := identity + uuid.String()
+
+	at.SetVideoGrant(grant).SetIdentity(uuID).SetValidFor(time.Hour)
 
 	token, _ := at.ToJWT()
 	return token, nil
