@@ -70,3 +70,18 @@ func (u UserModel) SelectUser(username string, password string) error {
 
 	return nil
 }
+
+func (u UserModel) FindUser(username string) (*User, error) {
+	query := `SELECT id, username, role FROM users WHERE username = $1`
+
+	args := []interface{}{username}
+
+	var storedUser User
+
+	err := u.DB.QueryRow(query, args...).Scan(&storedUser.ID, &storedUser.Username, &storedUser.Role)
+
+	if err != nil {
+		return nil, err
+	}
+	return &storedUser, nil
+}

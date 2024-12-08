@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
+	"uncademy-app/internals/data"
 
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
@@ -15,24 +17,38 @@ type Token struct {
 	Identity string `json:"identity"`
 }
 
-func LivitKitTokenGeneration(input Token) (string, error) {
+func LivitKitTokenGeneration(input Token, models *data.Models) (string, error) {
 	err := godotenv.Load(".env")
 
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	at := auth.NewAccessToken(os.Getenv("LIVEKIT_API_KEY"), os.Getenv("LIVEKIT_API_SECRET"))
-	grant := &auth.VideoGrant{
-		RoomJoin: true,
-		Room:     input.Room,
+	user, err := models.User.FindUser(input.Identity)
+	if err != nil {
+		log.Fatal(err.Error())
 	}
 
-	identity := "anu"
+	fmt.Println(user.Role)
+
+	admin := false
+	publishdata := false
+
+	if user.Role == "teacher" {
+		admin = true
+		publishdata = true
+	}
+	at := auth.NewAccessToken(os.Getenv("LIVEKIT_API_KEY"), os.Getenv("LIVEKIT_API_SECRET"))
+	grant := &auth.VideoGrant{
+		RoomJoin:   true,
+		Room:       input.Room,
+		RoomAdmin:  admin,
+		CanPublish: &publishdata,
+	}
 
 	uuid := uuid.New()
 
-	uuID := identity + uuid.String()
+	uuID := input.Identity + uuid.String()
 
 	at.SetVideoGrant(grant).SetIdentity(uuID).SetValidFor(time.Hour)
 
