@@ -11,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import VideoComponent from "./VideoComponent";
 import { useRouter } from "next/navigation";
 
 export default function CheckRoom() {
@@ -22,9 +21,7 @@ export default function CheckRoom() {
         <CardTitle>Join Room</CardTitle>
         <CardDescription>Join your new room in one-click.</CardDescription>
       </CardHeader>
-      <CardContent>
-        <VideoComponent />
-      </CardContent>
+      <CardContent>{/* <VideoComponent /> */}</CardContent>
       <CardFooter className="flex justify-center">
         <Button
           onClick={() => {

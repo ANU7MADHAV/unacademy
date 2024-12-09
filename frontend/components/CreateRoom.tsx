@@ -18,10 +18,11 @@ import useTokenStore from "@/src/store/tokenStore";
 
 interface IFormInput {
   room: string;
-  description: string;
+  identity: string;
 }
 
 export default function CreateRoom() {
+  const [room, setRoom] = React.useState("");
   const router = useRouter();
   const { register, handleSubmit } = useForm<IFormInput>();
   const { token, setToken } = useTokenStore();
@@ -34,12 +35,14 @@ export default function CreateRoom() {
 
     if (token.length != 0) {
       setToken(token);
-      router.push(`/check-room/${data.room}`);
+      setRoom(data.room);
+      router.push(`/dashboard`);
     }
   };
 
   React.useEffect(() => {
     localStorage.setItem("livekit-token", token);
+    localStorage.setItem("room", room);
   }, [token]);
 
   return (
@@ -58,10 +61,10 @@ export default function CreateRoom() {
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="description">Description</Label>
               <Input
-                className="py-8"
-                id="description"
-                placeholder="Description..."
-                {...register("description")}
+                className="py-2"
+                id="identity"
+                placeholder="identity"
+                {...register("identity")}
               />
             </div>
           </div>
