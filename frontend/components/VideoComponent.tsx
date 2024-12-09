@@ -1,55 +1,66 @@
-import { useEffect, useRef, useState } from "react";
+"use client";
+
+import useVideo from "@/src/hooks/useVideo";
+import { Button } from "./ui/button";
+import { useRef } from "react";
 
 const VideoComponent = () => {
-  const [stream, setStream] = useState<MediaStream | undefined>();
-  const [camerBool, setCameraBool] = useState(true);
-
-  const myVideo = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    navigator.mediaDevices
-      .getUserMedia({ video: camerBool, audio: true })
-      .then((stream: MediaStream) => {
-        setStream(stream);
-        if (myVideo.current) {
-          (myVideo.current as HTMLVideoElement).srcObject = stream;
-        }
-      });
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
-      }
-    };
-  }, [camerBool]);
+  const videoRefc = useRef<HTMLVideoElement>(null);
+  const {
+    audioRef,
+    handleCameraToggle,
+    handleMicrophoneToggle,
+    // handleScreenShareToggle,
+    publishAudio,
+    publishScreen,
+    publishVideo,
+    screenRef,
+    videoRef,
+    // isVideoReady,
+  } = useVideo();
+  //
+  //   if (!isVideoReady) {
+  //     return <div>Loading...</div>;
+  //   }
 
   return (
-    <div className="space-y-3">
-      <section>
-        {camerBool || (
-          <div className="w-[300px] h-[200px] rounded-full bg-black"></div>
-        )}
-        {camerBool && (
-          <video
-            className="rounded-full w-[300px]"
-            playsInline
-            muted
-            ref={myVideo}
-            autoPlay
-          />
-        )}
-      </section>
-      <div className="flex justify-center space-x-3">
-        <button
-          onClick={() => {
-            console.log(camerBool);
-            setCameraBool(!camerBool);
-          }}
-          className={`bg-blue-400 px-4 py-2 rounded-lg text-white  ${
-            camerBool ? "no-underline" : "line-through"
-          }`}
-        >
-          Camera
-        </button>
+    <div>
+      <p>Hello</p>
+      <video ref={videoRefc} autoPlay muted playsInline />
+      <video ref={screenRef} autoPlay muted playsInline />
+      <audio ref={audioRef} muted={true} autoPlay />
+
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        playsInline
+        className="bg-black h-screen"
+      />
+
+      <div>
+        <div>
+          <>
+            <Button
+              onClick={handleCameraToggle}
+              variant={!publishVideo ? "destructive" : "default"}
+            >
+              Camera
+            </Button>
+            <Button
+              onClick={handleMicrophoneToggle}
+              variant={!publishAudio ? "destructive" : "default"}
+            >
+              Microphone
+            </Button>
+            {/* <Button
+              onClick={handleScreenShareToggle}
+              variant={!publishScreen ? "destructive" : "default"}
+            >
+              Share screeen
+            </Button> */}
+          </>
+        </div>
       </div>
     </div>
   );

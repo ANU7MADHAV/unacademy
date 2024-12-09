@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useRef, useState } from "react";
 import {
   RemoteTrack,
@@ -12,7 +13,7 @@ import { jwtDecode } from "jwt-decode";
 interface Jwt {
   sub: string;
   video: {
-    canpublish: boolean;
+    canPublish: boolean;
     room: string;
     roomAdmin: boolean;
     roomJoin: boolean;
@@ -30,29 +31,32 @@ const useVideo = () => {
 
   const [roomId, setRoomId] = useState("");
   const [token, setToken] = useState("");
-  const [publishVideo, setPublishVideo] = useState(false);
-  const [publishAudio, setPublishAudio] = useState(false);
+  const [publishVideo, setPublishVideo] = useState(true);
+  const [publishAudio, setPublishAudio] = useState(true);
   const [publishScreen, setPublishScreeen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const liveKit = localStorage.getItem("liveKit");
-    const room = localStorage.getItem("room");
-    if (liveKit && room) {
-      setToken(liveKit);
-      setRoomId(room);
-    }
-  }, []);
-
-  useEffect(() => {
-    const initilizeRoom = async () => {
+    const initializeRoom = async () => {
       try {
-        if (!token) return;
+        const liveKit = localStorage.getItem("livekit-token");
+        const room = localStorage.getItem("room");
 
-        const decodejwt = jwtDecode<Jwt>(token);
-        username.current = decodejwt.sub;
-        const { canpublish, room, roomAdmin, roomJoin } = decodejwt.video;
+        if (!liveKit || !room) {
+          setIsLoading(false);
+          return;
+        }
 
-        if (room !== roomId) return;
+        setToken(liveKit);
+        setRoomId(room);
+
+        if (!liveKit) return;
+
+        const decodedJwt = jwtDecode<Jwt>(liveKit);
+        username.current = decodedJwt.sub;
+        const { canPublish, room: jwtRoom, roomAdmin } = decodedJwt.video;
+
+        if (jwtRoom !== room) return;
 
         currentRoom.current = new Room({
           adaptiveStream: true,
@@ -62,71 +66,63 @@ const useVideo = () => {
           },
         });
 
+        await currentRoom.current.prepareConnection(serverUrl!, liveKit);
+        await currentRoom.current.connect(serverUrl!, liveKit);
+
+        console.log(videoRef.current);
+
         currentRoom.current.on(
           RoomEvent.TrackSubscribed,
           handleTrackSubscribed
         );
 
-        // show admin track their self
+        // Show admin track their self
         if (roomAdmin) {
           await handleAdminShowTracks();
         }
 
-        // connect room
-        if (serverUrl) {
-          await currentRoom.current.prepareConnection(serverUrl, token);
-          await currentRoom.current.connect(serverUrl, token);
-        }
-
-        // publish video and audio track
-        if (roomAdmin && canpublish) {
+        // Publish tracks if admin and can publish
+        if (roomAdmin && canPublish) {
           await handlePublishTrack();
         }
+
+        setIsLoading(false);
       } catch (error) {
-        console.log(error);
+        console.error("Room initialization error:", error);
+        setIsLoading(false);
       }
     };
 
-    initilizeRoom();
+    initializeRoom();
 
     return () => {
       if (currentRoom.current) {
         currentRoom.current.disconnect();
       }
-      if (videoRef.current) {
-        videoRef.current = null;
-      }
     };
-  }, [roomId, token, serverUrl]);
+  }, [serverUrl]);
 
   const handleTrackSubscribed = async (track: RemoteTrack) => {
-    console.log(track);
-
     try {
       if (track.source === "screen_share" && screenRef.current) {
-        screenRef.current.srcObject = null;
-        const mediaStream = new MediaStream([track.mediaStreamTrack]);
-        screenRef.current.srcObject = mediaStream;
+        screenRef.current.srcObject = new MediaStream([track.mediaStreamTrack]);
       }
       if (
         track.kind === "video" &&
         track.source === "camera" &&
         videoRef.current
       ) {
-        videoRef.current.srcObject = null;
-        const mediaStream = new MediaStream([track.mediaStreamTrack]);
-        videoRef.current.srcObject = mediaStream;
-      } else if (
+        videoRef.current.srcObject = new MediaStream([track.mediaStreamTrack]);
+      }
+      if (
         track.kind === "audio" &&
         track.source === "microphone" &&
         audioRef.current
       ) {
-        audioRef.current.srcObject = null;
-        const mediaStream = new MediaStream([track.mediaStreamTrack]);
-        audioRef.current.srcObject = mediaStream;
+        audioRef.current.srcObject = new MediaStream([track.mediaStreamTrack]);
       }
     } catch (error) {
-      console.log(error);
+      console.error("Track subscription error:", error);
     }
   };
 
@@ -138,99 +134,107 @@ const useVideo = () => {
       });
 
       const audioTrack = tracks.find((track) => track.kind === "audio");
+      const videoTrack = tracks.find((track) => track.kind === "video");
+
       if (audioTrack && audioRef.current) {
         audioRef.current.srcObject = new MediaStream([
           audioTrack.mediaStreamTrack,
         ]);
       }
 
-      const videoTrack = tracks.find((track) => track.kind === "video");
       if (videoTrack && videoRef.current) {
         videoRef.current.srcObject = new MediaStream([
           videoTrack.mediaStreamTrack,
         ]);
       }
     } catch (error) {
-      console.log(error);
+      console.error("Admin track setup error:", error);
     }
   };
 
   const handlePublishTrack = async () => {
     try {
-      if (!(videoRef.current?.srcObject instanceof MediaStream)) return;
+      if (videoRef.current?.srcObject instanceof MediaStream) {
+        const videoTracks = videoRef.current.srcObject.getVideoTracks();
+        await currentRoom.current?.localParticipant.publishTrack(
+          videoTracks[0],
+          {
+            name: "videoTrack",
+            simulcast: true,
+            source: Track.Source.Camera,
+          }
+        );
+      }
 
-      const videoTracks = videoRef.current.srcObject.getVideoTracks();
-
-      await currentRoom.current?.localParticipant.publishTrack(videoTracks[0], {
-        name: "videoTrack",
-        simulcast: true,
-        source: Track.Source.Camera,
-      });
-
-      if (!(audioRef.current?.srcObject instanceof MediaStream)) return;
-
-      const audioTracks = audioRef.current.srcObject.getAudioTracks();
-
-      await currentRoom.current?.localParticipant.publishTrack(audioTracks[0], {
-        name: "audioTrack",
-        simulcast: true,
-        source: Track.Source.Microphone,
-      });
+      if (audioRef.current?.srcObject instanceof MediaStream) {
+        const audioTracks = audioRef.current.srcObject.getAudioTracks();
+        await currentRoom.current?.localParticipant.publishTrack(
+          audioTracks[0],
+          {
+            name: "audioTrack",
+            simulcast: true,
+            source: Track.Source.Microphone,
+          }
+        );
+      }
     } catch (error) {
-      console.log(error);
+      console.error("Track publish error:", error);
     }
   };
 
   const handleCameraToggle = async () => {
     try {
-      if (publishVideo) {
-        await currentRoom.current?.localParticipant.setCameraEnabled(false);
-      } else {
-        await currentRoom.current?.localParticipant.setCameraEnabled(true);
-      }
+      await currentRoom.current?.localParticipant.setCameraEnabled(
+        !publishVideo
+      );
       setPublishVideo((prev) => !prev);
     } catch (error) {
-      console.log(error);
+      console.error("Camera toggle error:", error);
     }
   };
 
   const handleMicrophoneToggle = async () => {
     try {
-      if (publishAudio) {
-        await currentRoom.current?.localParticipant.setMicrophoneEnabled(false);
-      } else {
-        const localTrack =
-          await currentRoom.current?.localParticipant.setMicrophoneEnabled(
-            true
-          );
-
-        if (!localTrack || !localTrack.track) {
-          console.log("No tracks found");
-          return;
-        }
-
-        screenRef.current!.srcObject = null;
-
-        const mediaStream = new MediaStream([
-          localTrack.track.mediaStreamTrack,
-        ]);
-
-        screenRef.current!.srcObject = mediaStream;
-      }
+      await currentRoom.current?.localParticipant.setMicrophoneEnabled(
+        !publishAudio
+      );
       setPublishAudio((prev) => !prev);
     } catch (error) {
-      console.log(error);
+      console.log("Microphone toggle error:", error);
     }
   };
 
-  const handleScreenShareToggle = async () => {
-    if (publishScreen) {
-      await currentRoom.current?.localParticipant.setScreenShareEnabled(false);
-    } else {
-      await currentRoom.current?.localParticipant.setScreenShareEnabled(true);
-    }
-    setPublishScreeen((prev) => !prev);
-  };
+  //   const handleShareScreenToggle = async () => {
+  //     try {
+  //       if (publishScreen) {
+  //         await currentRoomRef.current?.localParticipant.setScreenShareEnabled(
+  //           false
+  //         );
+  //       } else {
+  //         const localTrack =
+  //           await currentRoomRef.current?.localParticipant.setScreenShareEnabled(
+  //             true
+  //           );
+  //
+  //         if (!localTrack || !localTrack.track) {
+  //           console.log("No tracks found");
+  //           return;
+  //         }
+  //
+  //         screenRef.current!.srcObject = null;
+  //
+  //         const mediaStream = new MediaStream([
+  //           localTrack.track.mediaStreamTrack,
+  //         ]);
+  //
+  //         screenRef.current!.srcObject = mediaStream;
+  //       }
+  //
+  //       setPublishScreeen((prev) => !prev);
+  //     } catch (err) {
+  //       console.log(err);
+  //     }
+  //   };
 
   return {
     videoRef,
@@ -239,11 +243,12 @@ const useVideo = () => {
     username: username.current,
     handleCameraToggle,
     handleMicrophoneToggle,
-    handleScreenShareToggle,
-
+    // handleScreenShareToggle,
+    handleAdminShowTracks,
     publishVideo,
     publishAudio,
     publishScreen,
+    isLoading,
   };
 };
 

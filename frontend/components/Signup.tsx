@@ -41,7 +41,7 @@ export default function Signup() {
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
     console.log("logged");
     const res = await axios.post(
-      "http://localhost:8080/v1/user/register",
+      "http://localhost:8080/v1/users/register",
       data
     );
     setUsername(data.username);
