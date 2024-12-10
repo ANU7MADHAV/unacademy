@@ -15,6 +15,8 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import useTokenStore from "@/src/store/tokenStore";
+import { jwtDecode } from "jwt-decode";
+import { Jwt } from "@/src/hooks/useVideo";
 
 interface IFormInput {
   room: string;
@@ -33,10 +35,16 @@ export default function CreateRoom() {
     const token = res.data.token;
     console.log(token);
 
+    const decodeJwt = jwtDecode<Jwt>(token);
+
     if (token.length != 0) {
       setToken(token);
       setRoom(data.room);
-      router.push(`/dashboard`);
+      if (decodeJwt.video.roomAdmin) {
+        router.push(`/dashboard/${token}`);
+      } else {
+        router.push("/dashboard");
+      }
     }
   };
 

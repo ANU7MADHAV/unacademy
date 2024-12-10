@@ -2,31 +2,25 @@
 
 import useVideo from "@/src/hooks/useVideo";
 import { Button } from "./ui/button";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 const VideoComponent = () => {
-  const videoRefc = useRef<HTMLVideoElement>(null);
   const {
     audioRef,
     handleCameraToggle,
     handleMicrophoneToggle,
-    // handleScreenShareToggle,
+    handleShareScreenToggle,
     publishAudio,
     publishScreen,
     publishVideo,
     screenRef,
     videoRef,
-    // isVideoReady,
+    isScreenSharing,
   } = useVideo();
-  //
-  //   if (!isVideoReady) {
-  //     return <div>Loading...</div>;
-  //   }
+  console.log("screeenref", isScreenSharing);
 
   return (
     <div>
-      <p>Hello</p>
-      <video ref={videoRefc} autoPlay muted playsInline />
       <video ref={screenRef} autoPlay muted playsInline />
       <audio ref={audioRef} muted={true} autoPlay />
 
@@ -53,12 +47,12 @@ const VideoComponent = () => {
             >
               Microphone
             </Button>
-            {/* <Button
-              onClick={handleScreenShareToggle}
+            <Button
+              onClick={handleShareScreenToggle}
               variant={!publishScreen ? "destructive" : "default"}
             >
               Share screeen
-            </Button> */}
+            </Button>
           </>
         </div>
       </div>
