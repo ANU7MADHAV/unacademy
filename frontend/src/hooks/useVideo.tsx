@@ -10,7 +10,7 @@ import {
 } from "livekit-client";
 import { jwtDecode } from "jwt-decode";
 
-interface Jwt {
+export interface Jwt {
   sub: string;
   video: {
     canPublish: boolean;
@@ -35,6 +35,7 @@ const useVideo = () => {
   const [publishAudio, setPublishAudio] = useState(true);
   const [publishScreen, setPublishScreeen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
 
   useEffect(() => {
     const initializeRoom = async () => {
@@ -68,8 +69,6 @@ const useVideo = () => {
 
         await currentRoom.current.prepareConnection(serverUrl!, liveKit);
         await currentRoom.current.connect(serverUrl!, liveKit);
-
-        console.log(videoRef.current);
 
         currentRoom.current.on(
           RoomEvent.TrackSubscribed,
@@ -106,6 +105,7 @@ const useVideo = () => {
     try {
       if (track.source === "screen_share" && screenRef.current) {
         screenRef.current.srcObject = new MediaStream([track.mediaStreamTrack]);
+        setIsScreenSharing(true);
       }
       if (
         track.kind === "video" &&
@@ -122,7 +122,7 @@ const useVideo = () => {
         audioRef.current.srcObject = new MediaStream([track.mediaStreamTrack]);
       }
     } catch (error) {
-      console.error("Track subscription error:", error);
+      console.log("Track subscription error:", error);
     }
   };
 
@@ -148,37 +148,31 @@ const useVideo = () => {
         ]);
       }
     } catch (error) {
-      console.error("Admin track setup error:", error);
+      console.log("Admin track setup error:", error);
     }
   };
 
   const handlePublishTrack = async () => {
     try {
-      if (videoRef.current?.srcObject instanceof MediaStream) {
-        const videoTracks = videoRef.current.srcObject.getVideoTracks();
-        await currentRoom.current?.localParticipant.publishTrack(
-          videoTracks[0],
-          {
-            name: "videoTrack",
-            simulcast: true,
-            source: Track.Source.Camera,
-          }
-        );
-      }
+      if (!(videoRef.current?.srcObject instanceof MediaStream)) return;
 
-      if (audioRef.current?.srcObject instanceof MediaStream) {
-        const audioTracks = audioRef.current.srcObject.getAudioTracks();
-        await currentRoom.current?.localParticipant.publishTrack(
-          audioTracks[0],
-          {
-            name: "audioTrack",
-            simulcast: true,
-            source: Track.Source.Microphone,
-          }
-        );
-      }
+      const videoTracks = videoRef.current.srcObject.getVideoTracks();
+      await currentRoom.current?.localParticipant.publishTrack(videoTracks[0], {
+        name: "videoTrack",
+        simulcast: true,
+        source: Track.Source.Camera,
+      });
+
+      if (!(audioRef.current?.srcObject instanceof MediaStream)) return;
+
+      const audioTracks = audioRef.current.srcObject.getAudioTracks();
+      await currentRoom.current?.localParticipant.publishTrack(audioTracks[0], {
+        name: "audioTrack",
+        simulcast: true,
+        source: Track.Source.Microphone,
+      });
     } catch (error) {
-      console.error("Track publish error:", error);
+      console.log("Track publish error:", error);
     }
   };
 
@@ -189,7 +183,7 @@ const useVideo = () => {
       );
       setPublishVideo((prev) => !prev);
     } catch (error) {
-      console.error("Camera toggle error:", error);
+      console.log("Camera toggle error:", error);
     }
   };
 
@@ -204,37 +198,39 @@ const useVideo = () => {
     }
   };
 
-  //   const handleShareScreenToggle = async () => {
-  //     try {
-  //       if (publishScreen) {
-  //         await currentRoomRef.current?.localParticipant.setScreenShareEnabled(
-  //           false
-  //         );
-  //       } else {
-  //         const localTrack =
-  //           await currentRoomRef.current?.localParticipant.setScreenShareEnabled(
-  //             true
-  //           );
-  //
-  //         if (!localTrack || !localTrack.track) {
-  //           console.log("No tracks found");
-  //           return;
-  //         }
-  //
-  //         screenRef.current!.srcObject = null;
-  //
-  //         const mediaStream = new MediaStream([
-  //           localTrack.track.mediaStreamTrack,
-  //         ]);
-  //
-  //         screenRef.current!.srcObject = mediaStream;
-  //       }
-  //
-  //       setPublishScreeen((prev) => !prev);
-  //     } catch (err) {
-  //       console.log(err);
-  //     }
-  //   };
+  const handleShareScreenToggle = async () => {
+    try {
+      if (publishScreen) {
+        await currentRoom.current?.localParticipant.setScreenShareEnabled(
+          false
+        );
+        setIsScreenSharing(false);
+      } else {
+        const localTrack =
+          await currentRoom.current?.localParticipant.setScreenShareEnabled(
+            true
+          );
+
+        if (!localTrack || !localTrack.track) {
+          console.log("No tracks found");
+          return;
+        }
+
+        screenRef.current!.srcObject = null;
+
+        const mediaStream = new MediaStream([
+          localTrack.track.mediaStreamTrack,
+        ]);
+
+        screenRef.current!.srcObject = mediaStream;
+        setIsScreenSharing(true);
+      }
+
+      setPublishScreeen((prev) => !prev);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return {
     videoRef,
@@ -243,12 +239,13 @@ const useVideo = () => {
     username: username.current,
     handleCameraToggle,
     handleMicrophoneToggle,
-    // handleScreenShareToggle,
+    handleShareScreenToggle,
     handleAdminShowTracks,
     publishVideo,
     publishAudio,
     publishScreen,
     isLoading,
+    isScreenSharing,
   };
 };
 
