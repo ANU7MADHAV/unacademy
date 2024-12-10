@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import useTokenStore from "@/src/store/tokenStore";
 import { jwtDecode } from "jwt-decode";
 import { Jwt } from "@/src/hooks/useVideo";
+import useRoomStore from "@/src/store/roomStore";
 
 interface IFormInput {
   room: string;
@@ -24,10 +25,11 @@ interface IFormInput {
 }
 
 export default function CreateRoom() {
-  const [room, setRoom] = React.useState("");
   const router = useRouter();
   const { register, handleSubmit } = useForm<IFormInput>();
   const { token, setToken } = useTokenStore();
+  // const { room, setRoom } = useRoomStore();
+  const [room, setRoom] = React.useState("");
 
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
     const res = await axios.post("http://localhost:8080/v1/token/create", data);
@@ -39,7 +41,8 @@ export default function CreateRoom() {
 
     if (token.length != 0) {
       setToken(token);
-      setRoom(data.room);
+      const roomId = data.room;
+      setRoom(roomId);
       if (decodeJwt.video.roomAdmin) {
         router.push(`/dashboard/${token}`);
       } else {
@@ -49,8 +52,12 @@ export default function CreateRoom() {
   };
 
   React.useEffect(() => {
-    localStorage.setItem("livekit-token", token);
-    localStorage.setItem("room", room);
+    const localRoom = localStorage.getItem("room");
+    const localToken = localStorage.getItem("livekit-token");
+    if (!localRoom && !localToken) {
+      localStorage.setItem("livekit-token", token);
+      localStorage.setItem("room", room);
+    }
   }, [token]);
 
   return (
