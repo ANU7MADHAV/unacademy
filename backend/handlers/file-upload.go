@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"time"
-	"uncademy-app/internals/data"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -33,7 +32,7 @@ const (
 	ImageQuality = 90
 )
 
-func ConvertAndUploadHandler(slides data.Slides, file *multipart.FileHeader) (ImageResponse, error) {
+func ConvertAndUploadHandler(metadata string, file *multipart.FileHeader) (ImageResponse, error) {
 
 	if file.Size > MaxFileSize {
 		log.Fatal("File size is not allowed")
