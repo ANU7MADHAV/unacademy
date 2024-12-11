@@ -11,7 +11,7 @@ type SlidesModel struct {
 
 type Slides struct {
 	ID        int
-	Metadata  string
+	Metadata  string `json:"metadata"`
 	CreatedAt time.Time
 }
 
@@ -23,9 +23,9 @@ func (s SlidesModel) Insert(slides Slides) error {
 	RETURNING id,
 	`
 
-	args := []interface{}{slides.Metadata}
+	args := []interface{}{slides.Metadata, slides.CreatedAt}
 
-	return s.DB.QueryRow(query, args...).Scan(&slides.Metadata, slides.ID, slides.CreatedAt)
+	return s.DB.QueryRow(query, args...).Scan(slides.ID)
 }
 
 func (s *SlidesModel) Get(id int) (*Slides, error) {
