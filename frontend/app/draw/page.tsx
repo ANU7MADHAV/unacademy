@@ -1,6 +1,7 @@
 "use client";
 
 import Drawing from "@/components/Drawing";
+
 import React, { useEffect, useState } from "react";
 
 const page = () => {
@@ -14,7 +15,7 @@ const page = () => {
   console.log("room", room);
   return (
     <div>
-      <Drawing roomId={room} />
+      <Drawing />
     </div>
   );
 };
