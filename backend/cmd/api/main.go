@@ -39,7 +39,7 @@ type Applications struct {
 	config      config
 	logger      *log.Logger
 	models      data.Models
-	wsService   *data.WebSocketService
+	webSocket   WebSocketServer
 	redisClient *redis.Client
 }
 
@@ -70,7 +70,7 @@ func main() {
 
 	defer db.Close()
 
-	wsService := data.NewWebSocketService()
+	wsService := NewWebSocketService()
 
 	redisClient, err := connectRedis(&config)
 
@@ -88,7 +88,7 @@ func main() {
 		config:      config,
 		logger:      logger,
 		models:      data.NewModels(db),
-		wsService:   wsService,
+		webSocket:   *wsService,
 		redisClient: redisClient,
 	}
 
