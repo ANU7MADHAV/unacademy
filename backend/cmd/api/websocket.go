@@ -2,15 +2,19 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
 
+type Client struct {
+	Conn   *websocket.Conn
+	UserId string
+}
+
 type WebSocketServer struct {
-	Client map[*websocket.Conn]bool
+	Client map[Client]bool
 }
 
 var upgrade = websocket.Upgrader{
@@ -23,17 +27,28 @@ var upgrade = websocket.Upgrader{
 
 func NewWebSocketService() *WebSocketServer {
 	return &WebSocketServer{
-		Client: make(map[*websocket.Conn]bool),
+		Client: make(map[Client]bool),
 	}
 }
 
 func (app *Applications) WebsocketHandler(c *gin.Context) {
+	userId := c.Query("id")
+
+	fmt.Println("userId", userId)
+
 	// upgrade http connection to websocket connection
 	connection, err := upgrade.Upgrade(c.Writer, c.Request, nil)
 
 	if err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
 	}
+
+	client := &Client{
+		Conn:   connection,
+		UserId: userId,
+	}
+
+	app.webSocket.Client[*client] = true
 
 	for {
 		messageType, message, err := connection.ReadMessage()
@@ -42,15 +57,28 @@ func (app *Applications) WebsocketHandler(c *gin.Context) {
 			fmt.Println("err", err.Error())
 			break
 		}
-
-		if err := connection.WriteMessage(messageType, message); err != nil {
-			log.Println(err)
-			return
-		}
-		go messageHandler(message)
+		app.BroadcastMessage(client, messageType, message)
+		// go messageHandler(message)
 	}
 }
 
-func messageHandler(message []byte) {
-	fmt.Println(string(message))
+func (app *Applications) BroadcastMessage(sender *Client, messageType int, message []byte) {
+
+	for client := range app.webSocket.Client {
+
+		if client.UserId == sender.UserId {
+			continue
+		}
+		fmt.Println("message", string(message))
+
+		if err := client.Conn.WriteMessage(messageType, message); err != nil {
+			fmt.Println("error", err.Error())
+			client.Conn.Close()
+			delete(app.webSocket.Client, client)
+		}
+	}
 }
+
+// func messageHandler(message []byte) {
+// 	fmt.Println(string(message))
+// }
