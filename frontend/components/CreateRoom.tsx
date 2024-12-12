@@ -57,7 +57,7 @@ export default function CreateRoom() {
       localStorage.setItem("livekit-token", token);
       localStorage.setItem("room", room);
     }
-  }, [token]);
+  }, [token, room]);
 
   return (
     <Card className="w-[350px]">

@@ -2,7 +2,6 @@
 
 import useVideo from "@/src/hooks/useVideo";
 import { Button } from "./ui/button";
-import { useRef, useState } from "react";
 
 const VideoComponent = () => {
   const {

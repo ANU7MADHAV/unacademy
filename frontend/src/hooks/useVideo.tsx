@@ -29,13 +29,16 @@ const useVideo = () => {
   const currentRoom = useRef<Room | null>(null);
   const username = useRef<string | null>(null);
 
-  const [roomId, setRoomId] = useState("");
+  const [room, setRoomId] = useState("");
   const [token, setToken] = useState("");
   const [publishVideo, setPublishVideo] = useState(true);
   const [publishAudio, setPublishAudio] = useState(true);
   const [publishScreen, setPublishScreeen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+
+  console.log("token", token);
+  console.log("room", room);
 
   useEffect(() => {
     const initializeRoom = async () => {
