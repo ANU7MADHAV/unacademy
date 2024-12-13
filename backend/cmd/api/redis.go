@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -28,14 +29,21 @@ func (app *Applications) GetSlides(c *gin.Context) {
 	val, err := app.redisClient.Get(context.Background(), input.Metadata).Result()
 	if err != nil {
 		if err == redis.Nil {
-			// Key not found in Redis
 			c.JSON(http.StatusNotFound, gin.H{"error": "No slides found for given metadata"})
 		} else {
-			// Other Redis errors
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve slides"})
 		}
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"response": val})
+	var dat []string
+
+	if err := json.Unmarshal([]byte(val), &dat); err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	fmt.Println("value", val)
+
+	c.JSON(http.StatusOK, dat)
 }
