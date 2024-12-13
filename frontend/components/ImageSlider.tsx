@@ -1,16 +1,43 @@
 "use client";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import SimpleImageSlider from "react-simple-image-slider";
 
 const ImageSlider = () => {
   const [imagesUrls, setImagesUrls] = useState<string[]>([]);
+  const webSocketRef = useRef<WebSocket | null>(null);
+
+  useEffect(() => {
+    webSocketRef.current = new WebSocket("ws://localhost:8080/ws?id=user123");
+
+    webSocketRef.current.onopen = () => {
+      console.log("connection established");
+    };
+
+    webSocketRef.current.onmessage = (message: MessageEvent) => {
+      console.log("message", message);
+    };
+
+    webSocketRef.current.onerror = () => {
+      console.log("error occured");
+    };
+
+    webSocketRef.current.onclose = () => {
+      console.log("closed connection");
+    };
+
+    return () => {
+      if (webSocketRef.current) {
+        webSocketRef.current.close();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const getSlides = async () => {
       try {
         const res = await axios.post("http://localhost:8080/v1/slides", {
-          metadata: "mera-data2",
+          metadata: "meta-data1",
         });
         const resData = res.data;
 
@@ -50,8 +77,13 @@ const ImageSlider = () => {
   }, []);
 
   const images = imagesUrls.map((url) => ({ url }));
+  console.log("images", images);
 
-  console.log("images", images[0]?.url[1]);
+  useEffect(() => {
+    if (webSocketRef.current?.readyState == webSocketRef.current?.OPEN) {
+      webSocketRef.current?.send("hello");
+    }
+  }, []);
 
   return (
     <div>
