@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"reflect"
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -22,9 +21,6 @@ func (app *Applications) GetSlides(c *gin.Context) {
 		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
 		return
 	}
-
-	fmt.Println("input", input.Metadata)
-	fmt.Println("metadata type", reflect.TypeOf(input.Metadata))
 
 	val, err := app.redisClient.Get(context.Background(), input.Metadata).Result()
 	if err != nil {
