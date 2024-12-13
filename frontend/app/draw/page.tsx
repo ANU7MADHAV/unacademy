@@ -1,22 +1,11 @@
-"use client";
+import App from "@/components/Drawing";
 
-import Drawing from "@/components/Drawing";
-import React, { useEffect, useState } from "react";
-
-const Page = () => {
-  const [room, setRoom] = useState("");
-  useEffect(() => {
-    const roomId = localStorage.getItem("room");
-    if (roomId) {
-      setRoom(roomId);
-    }
-  }, [room]);
-  console.log("room", room);
+const DrawPage = () => {
   return (
     <div>
-      <Drawing />
+      <App />
     </div>
   );
 };
 
-export default Page;
+export default DrawPage;

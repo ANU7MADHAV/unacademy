@@ -57,6 +57,7 @@ func (app *Applications) WebsocketHandler(c *gin.Context) {
 			fmt.Println("err", err.Error())
 			break
 		}
+		fmt.Println("message", string(message))
 		app.BroadcastMessage(client, messageType, message)
 		// go messageHandler(message)
 	}
@@ -78,7 +79,3 @@ func (app *Applications) BroadcastMessage(sender *Client, messageType int, messa
 		}
 	}
 }
-
-// func messageHandler(message []byte) {
-// 	fmt.Println(string(message))
-// }
