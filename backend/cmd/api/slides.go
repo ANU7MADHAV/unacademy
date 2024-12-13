@@ -73,7 +73,7 @@ func (app *Applications) InsertSlides(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("value", val)
+	fmt.Println("value", dat)
 
-	c.JSON(200, gin.H{"imageUrls": val})
+	c.JSON(200, gin.H{"imageUrls": dat})
 }
