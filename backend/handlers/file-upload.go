@@ -121,12 +121,13 @@ func convertAndUploadPages(doc *fitz.Document, config S3Config) ([]string, error
 			time.Now().Format("20060102-150405"),
 		)
 
-		_, err = svc.PutObject(&s3.PutObjectInput{
+		output, err := svc.PutObject(&s3.PutObjectInput{
 			Bucket:        aws.String(config.Bucket),
 			Key:           aws.String(filename),
 			Body:          bytes.NewReader(buf.Bytes()),
 			ContentType:   aws.String("image/jpeg"),
 			ContentLength: aws.Int64(int64(buf.Len())),
+			ACL:           aws.String("public-read"),
 		})
 
 		if err != nil {
@@ -134,7 +135,10 @@ func convertAndUploadPages(doc *fitz.Document, config S3Config) ([]string, error
 			continue
 		}
 
-		imageUrl := fmt.Sprintf("s3://%s/%s", config.Bucket, filename)
+		fmt.Println("output", output)
+
+		imageUrl := fmt.Sprintf("https://%s.s3.%s.amazonaws.com%s", config.Bucket, config.Region, filename)
+		fmt.Println("imageurl", imageUrl)
 		imageUrls = append(imageUrls, imageUrl)
 	}
 
