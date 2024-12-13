@@ -28,7 +28,7 @@ func SetupRoutes(app *Applications) *gin.Engine {
 	{
 		v1.POST("/token", app.TokenGeneration)
 		v1.POST("/file-upload", app.InsertSlides)
-		v1.GET("/slides", app.GetSlides)
+		v1.POST("/slides", app.GetSlides)
 
 		v1.POST("/create/rooms", app.CreateRoom)
 		v1.GET("/rooms", app.GetRooms)

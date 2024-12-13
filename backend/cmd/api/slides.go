@@ -48,7 +48,7 @@ func (app *Applications) InsertSlides(c *gin.Context) {
 		fmt.Println(err.Error())
 	}
 
-	err = app.redisClient.Set(context.Background(), metadata, jsonStringify, 5*time.Minute).Err()
+	err = app.redisClient.Set(context.Background(), metadata, jsonStringify, 30*time.Minute).Err()
 
 	if err != nil {
 		fmt.Println(err.Error())
@@ -62,7 +62,18 @@ func (app *Applications) InsertSlides(c *gin.Context) {
 		fmt.Println(err.Error())
 	}
 
+	valType := reflect.TypeOf(val)
+
+	fmt.Println("valType", valType)
+
+	var dat []string
+
+	if err := json.Unmarshal([]byte(val), &dat); err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
 	fmt.Println("value", val)
 
-	c.JSON(200, response)
+	c.JSON(200, gin.H{"imageUrls": val})
 }
