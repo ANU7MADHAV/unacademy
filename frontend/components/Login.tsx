@@ -18,6 +18,7 @@ import * as React from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { jwtDecode } from "jwt-decode";
 import { useRouter } from "next/navigation";
+import useTokenStore from "@/src/store/tokenStore";
 
 interface IFormInput {
   username: string;
@@ -30,16 +31,15 @@ interface JwtToken {
 
 export default function Login() {
   const [jwt, setJwt] = React.useState("");
-  const { setUsername } = userUserStore();
+  const { setToken } = useTokenStore();
   const { register, handleSubmit } = useForm<IFormInput>();
   const router = useRouter();
 
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
     const res = await axios.post("http://localhost:8080/v1/users/login", data);
-    setUsername(data.username);
     const resData = await res.data;
     setJwt(resData);
-    console.log("res", resData);
+    setToken(resData);
 
     const decode = jwtDecode<JwtToken>(resData);
 

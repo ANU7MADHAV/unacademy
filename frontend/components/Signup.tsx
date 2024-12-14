@@ -1,5 +1,4 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,10 +18,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import userUserStore from "@/src/store/authStore";
+import useTokenStore from "@/src/store/tokenStore";
 import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
 import * as React from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
@@ -39,19 +38,18 @@ interface IFormInput {
 
 export default function Signup() {
   const [jwt, setJwt] = React.useState("");
-  const { setUsername } = userUserStore();
+  const { setToken } = useTokenStore();
   const { register, handleSubmit, setValue } = useForm<IFormInput>();
   const router = useRouter();
 
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
-    console.log("logged");
     const res = await axios.post(
       "http://localhost:8080/v1/users/register",
       data
     );
-    setUsername(data.username);
     const resData = res.data;
     setJwt(resData);
+    setToken(resData);
     if (resData != "" && data.role === "teacher") {
       router.push("/");
     } else {
