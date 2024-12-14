@@ -11,6 +11,7 @@ import (
 type Client struct {
 	Conn   *websocket.Conn
 	UserId string
+	RoomId string
 }
 
 type WebSocketServer struct {
@@ -33,8 +34,14 @@ func NewWebSocketService() *WebSocketServer {
 
 func (app *Applications) WebsocketHandler(c *gin.Context) {
 	userId := c.Query("id")
+	roomId := c.Param("roomId")
 
 	fmt.Println("userId", userId)
+	fmt.Println("roomId", roomId)
+
+	if roomId == "" {
+		app.logger.Println("roomId is missing")
+	}
 
 	// upgrade http connection to websocket connection
 	connection, err := upgrade.Upgrade(c.Writer, c.Request, nil)
@@ -46,6 +53,7 @@ func (app *Applications) WebsocketHandler(c *gin.Context) {
 	client := &Client{
 		Conn:   connection,
 		UserId: userId,
+		RoomId: roomId,
 	}
 
 	app.webSocket.Client[*client] = true
@@ -66,8 +74,13 @@ func (app *Applications) WebsocketHandler(c *gin.Context) {
 func (app *Applications) BroadcastMessage(sender *Client, messageType int, message []byte) {
 
 	for client := range app.webSocket.Client {
+		fmt.Println("sender roomId", sender.RoomId)
 
 		if client.UserId == sender.UserId {
+			continue
+		}
+
+		if client.UserId != sender.RoomId {
 			continue
 		}
 		fmt.Println("message", string(message))

@@ -21,7 +21,7 @@ func SetupRoutes(app *Applications) *gin.Engine {
 	r.MaxMultipartMemory = 8 << 20
 
 	r.Use(cors.New(config))
-	r.GET("/ws", app.WebsocketHandler)
+	r.GET("/ws/:roomId", app.WebsocketHandler)
 
 	v1 := r.Group("/v1")
 
