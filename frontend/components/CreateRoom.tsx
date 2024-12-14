@@ -73,7 +73,7 @@ export default function CreateRoom() {
               <Input id="room" placeholder="Room" {...register("room")} />
             </div>
             <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Identity</Label>
               <Input
                 className="py-2"
                 id="identity"
