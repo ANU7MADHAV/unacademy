@@ -1,9 +1,9 @@
-import App from "@/components/Drawing";
+import CamerView from "@/components/CamerView";
 
 const DrawPage = () => {
   return (
     <div>
-      <App />
+      <CamerView />
     </div>
   );
 };
