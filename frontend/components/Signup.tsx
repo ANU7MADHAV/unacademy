@@ -21,6 +21,8 @@ import {
 import userUserStore from "@/src/store/authStore";
 import axios from "axios";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
 import * as React from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
@@ -39,6 +41,7 @@ export default function Signup() {
   const [jwt, setJwt] = React.useState("");
   const { setUsername } = userUserStore();
   const { register, handleSubmit, setValue } = useForm<IFormInput>();
+  const router = useRouter();
 
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
     console.log("logged");
@@ -49,7 +52,11 @@ export default function Signup() {
     setUsername(data.username);
     const resData = res.data;
     setJwt(resData);
-    console.log(resData);
+    if (resData != "" && data.role === "teacher") {
+      router.push("/");
+    } else {
+      router.push("/user/join-room");
+    }
   };
 
   React.useEffect(() => {
