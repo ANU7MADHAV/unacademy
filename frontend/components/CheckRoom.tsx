@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
+import CamerView from "./CamerView";
 
 export default function CheckRoom() {
   const router = useRouter();
@@ -21,7 +22,9 @@ export default function CheckRoom() {
         <CardTitle>Join Room</CardTitle>
         <CardDescription>Join your new room in one-click.</CardDescription>
       </CardHeader>
-      <CardContent>{/* <VideoComponent /> */}</CardContent>
+      <CardContent>
+        <CamerView />
+      </CardContent>
       <CardFooter className="flex justify-center">
         <Button
           onClick={() => {
