@@ -81,9 +81,9 @@ const ImageSlider = () => {
 
   useEffect(() => {
     if (webSocketRef.current?.readyState == webSocketRef.current?.OPEN) {
-      webSocketRef.current?.send("hello");
+      webSocketRef.current?.send(JSON.stringify(images));
     }
-  }, []);
+  }, [images]);
 
   return (
     <div>
