@@ -16,27 +16,40 @@ import axios from "axios";
 import Link from "next/link";
 import * as React from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { jwtDecode } from "jwt-decode";
+import { useRouter } from "next/navigation";
 
 interface IFormInput {
   username: string;
   password: string;
+}
+interface JwtToken {
+  role: string;
+  username: string;
 }
 
 export default function Login() {
   const [jwt, setJwt] = React.useState("");
   const { setUsername } = userUserStore();
   const { register, handleSubmit } = useForm<IFormInput>();
+  const router = useRouter();
 
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
-    console.log("logged");
-    const res = await axios.post(
-      "http://localhost:8080/v1/users/register",
-      data
-    );
+    const res = await axios.post("http://localhost:8080/v1/users/login", data);
     setUsername(data.username);
-    const resData = res.data;
+    const resData = await res.data;
     setJwt(resData);
-    console.log(resData);
+    console.log("res", resData);
+
+    const decode = jwtDecode<JwtToken>(resData);
+
+    console.log("decode", decode);
+
+    if (resData != "" && decode?.role === "teacher") {
+      router.push("/");
+    } else {
+      router.push("/user/join-room");
+    }
   };
 
   React.useEffect(() => {

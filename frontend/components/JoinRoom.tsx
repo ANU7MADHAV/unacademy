@@ -32,7 +32,8 @@ export default function JoinRoom() {
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
     const res = await axios.post("http://localhost:8080/v1/token/create", data);
 
-    const token = res.data.token;
+    console.log("res", res);
+    const token = await res.data.token;
 
     if (token.length != 0) {
       setToken(token);
