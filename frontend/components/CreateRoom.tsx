@@ -15,8 +15,6 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import useTokenStore from "@/src/store/tokenStore";
-import { jwtDecode } from "jwt-decode";
-import { Jwt } from "@/src/hooks/useVideo";
 
 interface IFormInput {
   room: string;
@@ -30,7 +28,11 @@ export default function CreateRoom() {
   const [room, setRoom] = React.useState("");
 
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
-    const res = await axios.post("http://localhost:8080/v1/token/create", data);
+    const res = await axios.post(
+      "http://localhost:8080/v1/token/create",
+      data,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
     const token = res.data.token;
     console.log(token);

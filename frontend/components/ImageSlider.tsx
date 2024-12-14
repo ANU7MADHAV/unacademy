@@ -1,4 +1,5 @@
 "use client";
+import useTokenStore from "@/src/store/tokenStore";
 import axios from "axios";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
@@ -8,6 +9,7 @@ const ImageSlider = () => {
   const [imagesUrls, setImagesUrls] = useState<string[]>([]);
   const webSocketRef = useRef<WebSocket | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const {token} = useTokenStore()
 
   useEffect(() => {
     webSocketRef.current = new WebSocket("ws://localhost:8080/ws?id=user123");
@@ -40,7 +42,7 @@ const ImageSlider = () => {
       try {
         const res = await axios.post("http://localhost:8080/v1/slides", {
           metadata: "meta-data1",
-        });
+        },{headers : {Authorization : `Bearer ${}`}});
         const resData = res.data;
 
         let urls: string[] = [];
