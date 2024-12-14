@@ -1,7 +1,5 @@
 "use client";
 
-import * as React from "react";
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,8 +11,30 @@ import {
 } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import CamerView from "./CamerView";
+import { jwtDecode } from "jwt-decode";
+import { useEffect, useState } from "react";
+
+interface JwtToken {
+  sub: string;
+  video: {
+    canPublish: boolean;
+    room: string;
+    roomAdmin: boolean;
+    roomJoin: boolean;
+  };
+}
 
 export default function CheckRoom() {
+  const [token, setToken] = useState<string>();
+  const [decodedToken, setDecodedToken] = useState<JwtToken>();
+  useEffect(() => {
+    const liveToken = localStorage.getItem("livekit-token");
+    if (!liveToken) return;
+    setToken(liveToken);
+
+    const decode = jwtDecode<JwtToken>(liveToken);
+    setDecodedToken(decode);
+  }, []);
   const router = useRouter();
   return (
     <Card className="w-[350px]">
@@ -28,7 +48,11 @@ export default function CheckRoom() {
       <CardFooter className="flex justify-center">
         <Button
           onClick={() => {
-            router.push("/dashboard");
+            if (decodedToken?.video.roomAdmin) {
+              router.push(`/dashboard/${token}`);
+            } else {
+              router.push(`/dashboard`);
+            }
           }}
         >
           Join

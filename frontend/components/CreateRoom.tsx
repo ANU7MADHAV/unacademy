@@ -27,7 +27,6 @@ export default function CreateRoom() {
   const router = useRouter();
   const { register, handleSubmit } = useForm<IFormInput>();
   const { token, setToken } = useTokenStore();
-  // const { room, setRoom } = useRoomStore();
   const [room, setRoom] = React.useState("");
 
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
@@ -36,17 +35,11 @@ export default function CreateRoom() {
     const token = res.data.token;
     console.log(token);
 
-    const decodeJwt = jwtDecode<Jwt>(token);
-
     if (token.length != 0) {
       setToken(token);
       const roomId = data.room;
       setRoom(roomId);
-      if (decodeJwt.video.roomAdmin) {
-        router.push(`/dashboard/${token}`);
-      } else {
-        router.push("/dashboard");
-      }
+      router.push(`/check-room/${roomId}`);
     }
   };
 

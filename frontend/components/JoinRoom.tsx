@@ -33,19 +33,12 @@ export default function JoinRoom() {
     const res = await axios.post("http://localhost:8080/v1/token/create", data);
 
     const token = res.data.token;
-    console.log(token);
-
-    const decodeJwt = jwtDecode<Jwt>(token);
 
     if (token.length != 0) {
       setToken(token);
       const roomId = data.room;
       setRoom(roomId);
-      if (decodeJwt.video.roomAdmin) {
-        router.push(`/dashboard/${token}`);
-      } else {
-        router.push("/dashboard");
-      }
+      router.push(`/check-room/${roomId}`);
     }
   };
 
