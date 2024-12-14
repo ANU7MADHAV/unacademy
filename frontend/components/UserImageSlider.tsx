@@ -1,12 +1,11 @@
 "use client";
 
+import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
-import SimpleImageSlider from "react-simple-image-slider";
 
 const UserImageSlider = () => {
-  //   const [imagesUrls, setImagesUrls] = useState([]);
   const webSocketRef = useRef<WebSocket | null>(null);
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<string>();
 
   useEffect(() => {
     webSocketRef.current = new WebSocket("ws://localhost:8080/ws");
@@ -19,16 +18,7 @@ const UserImageSlider = () => {
       console.log("message", message.data);
       const parsedMessage = JSON.parse(message.data);
 
-      if (Array.isArray(parsedMessage)) {
-        // Extract URLs from array of objects or use array of strings
-        const extractedUrls = parsedMessage.map((item) =>
-          typeof item === "string" ? item : item.url
-        );
-        setImages(extractedUrls);
-      } else if (parsedMessage.url) {
-        // If it's a single image object
-        setImages([parsedMessage.url]);
-      }
+      setImages(parsedMessage);
     };
 
     webSocketRef.current.onerror = () => {
@@ -46,19 +36,10 @@ const UserImageSlider = () => {
     };
   }, []);
 
-  console.log("message1", typeof images);
-  console.log("message1", images);
-
   return (
     <div>
-      {images.length > 0 && (
-        <SimpleImageSlider
-          width={900}
-          height={900}
-          images={images}
-          showBullets={true}
-          showNavs={true}
-        />
+      {images && (
+        <Image src={images} alt="image-slider" width={900} height={900} />
       )}
     </div>
   );
