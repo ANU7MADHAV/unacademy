@@ -24,20 +24,19 @@ func SetupRoutes(app *Applications) *gin.Engine {
 	r.GET("/ws/:roomId", app.WebsocketHandler)
 
 	v1 := r.Group("/v1")
-	v1.Use(app.CheckAuth)
 
 	{
-		v1.POST("/token", app.TokenGeneration)
-		v1.POST("/file-upload", app.InsertSlides)
+		v1.POST("/token", app.CheckAuth, app.TokenGeneration)
+		v1.POST("/file-upload", app.CheckAuth, app.InsertSlides)
 		v1.POST("/slides", app.GetSlides)
 
-		v1.POST("/create/rooms", app.CreateRoom)
-		v1.GET("/rooms", app.GetRooms)
+		v1.POST("/create/rooms", app.CheckAuth, app.CreateRoom)
+		v1.GET("/rooms", app.CheckAuth, app.GetRooms)
 
 		v1.POST("/users/register", app.Signup)
 		v1.POST("/users/login", app.Login)
 
-		v1.POST("/token/create", app.TokenGeneration)
+		v1.POST("/token/create", app.CheckAuth, app.TokenGeneration)
 	}
 
 	return r
