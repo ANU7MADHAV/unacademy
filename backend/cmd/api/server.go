@@ -24,6 +24,7 @@ func SetupRoutes(app *Applications) *gin.Engine {
 	r.GET("/ws/:roomId", app.WebsocketHandler)
 
 	v1 := r.Group("/v1")
+	v1.Use(app.CheckAuth)
 
 	{
 		v1.POST("/token", app.TokenGeneration)
