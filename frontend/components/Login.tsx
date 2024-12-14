@@ -11,34 +11,21 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import userUserStore from "@/src/store/authStore";
 import axios from "axios";
 import Link from "next/link";
 import * as React from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 
-enum Role {
-  student = "student",
-  teacher = "teacher",
-}
-
 interface IFormInput {
   username: string;
   password: string;
-  role: Role;
 }
 
-export default function Signup() {
+export default function Login() {
   const [jwt, setJwt] = React.useState("");
   const { setUsername } = userUserStore();
-  const { register, handleSubmit, setValue } = useForm<IFormInput>();
+  const { register, handleSubmit } = useForm<IFormInput>();
 
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
     console.log("logged");
@@ -60,7 +47,7 @@ export default function Signup() {
     <Card className="w-[350px]">
       <CardHeader>
         <CardTitle>Register</CardTitle>
-        <CardDescription>Register accordingly</CardDescription>
+        <CardDescription>Login to your account</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
@@ -81,31 +68,17 @@ export default function Signup() {
                 {...register("password")}
               />
             </div>
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="role">Role</Label>
-              <Select
-                onValueChange={(value) => setValue("role", value as Role)}
-              >
-                <SelectTrigger id="role">
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                  <SelectItem value="student">Student</SelectItem>
-                  <SelectItem value="teacher">Teacher</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
           <div className="flex justify-end">
-            <Button type="submit">Signup</Button>
+            <Button type="submit">Login</Button>
           </div>
         </form>
       </CardContent>
       <CardFooter>
         <p className="font-semibold text-gray-700">
-          Already registered
-          <Link href="/login">
-            <span className="px-3 underline text-blue-500">Login</span>
+          doesn't have account already
+          <Link href="/signup">
+            <span className="px-3 underline text-blue-500">Signup</span>
           </Link>
         </p>
       </CardFooter>
