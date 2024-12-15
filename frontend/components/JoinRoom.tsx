@@ -15,8 +15,6 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import useTokenStore from "@/src/store/tokenStore";
-import { jwtDecode } from "jwt-decode";
-import { Jwt } from "@/src/hooks/useVideo";
 
 interface IFormInput {
   room: string;
@@ -26,8 +24,9 @@ interface IFormInput {
 export default function JoinRoom() {
   const router = useRouter();
   const { register, handleSubmit } = useForm<IFormInput>();
-  const { token, setToken } = useTokenStore();
+  const { token } = useTokenStore();
   const [room, setRoom] = React.useState("");
+  const [livekitToken, setLivekitToken] = React.useState("");
 
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
     const res = await axios.post(
@@ -40,7 +39,7 @@ export default function JoinRoom() {
     const resToken = await res.data.token;
 
     if (token.length != 0) {
-      setToken(token);
+      setLivekitToken(resToken);
       const roomId = data.room;
       setRoom(roomId);
       router.push(`/check-room/${roomId}`);
@@ -51,7 +50,7 @@ export default function JoinRoom() {
     const localRoom = localStorage.getItem("room");
     const localToken = localStorage.getItem("livekit-token");
     if (!localRoom && !localToken) {
-      localStorage.setItem("livekit-token", token);
+      localStorage.setItem("livekit-token", livekitToken);
       localStorage.setItem("room", room);
     }
   }, [token, room]);
