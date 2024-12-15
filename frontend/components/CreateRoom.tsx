@@ -24,7 +24,8 @@ interface IFormInput {
 export default function CreateRoom() {
   const router = useRouter();
   const { register, handleSubmit } = useForm<IFormInput>();
-  const { token, setToken } = useTokenStore();
+  const { token } = useTokenStore();
+  const [livekitToken, setLivekitToken] = React.useState("");
   const [room, setRoom] = React.useState("");
 
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
@@ -34,11 +35,11 @@ export default function CreateRoom() {
       { headers: { Authorization: `Bearer ${token}` } }
     );
 
-    const token = res.data.token;
-    console.log(token);
+    const resData = res.data.token;
+    console.log(resData);
 
-    if (token.length != 0) {
-      setToken(token);
+    if (resData.length != 0) {
+      setLivekitToken(resData);
       const roomId = data.room;
       setRoom(roomId);
       router.push(`/check-room/${roomId}`);
@@ -49,7 +50,7 @@ export default function CreateRoom() {
     const localRoom = localStorage.getItem("room");
     const localToken = localStorage.getItem("livekit-token");
     if (!localRoom && !localToken) {
-      localStorage.setItem("livekit-token", token);
+      localStorage.setItem("livekit-token", livekitToken);
       localStorage.setItem("room", room);
     }
   }, [token, room]);

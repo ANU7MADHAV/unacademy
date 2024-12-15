@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import CamerView from "./CamerView";
 import { jwtDecode } from "jwt-decode";
 import { useEffect, useState } from "react";
+import { decode } from "punycode";
 
 interface JwtToken {
   sub: string;
@@ -33,6 +34,7 @@ export default function CheckRoom() {
     setToken(liveToken);
 
     const decode = jwtDecode<JwtToken>(liveToken);
+    console.log("decode", decode);
     setDecodedToken(decode);
   }, []);
   const router = useRouter();
