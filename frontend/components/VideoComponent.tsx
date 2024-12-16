@@ -1,8 +1,9 @@
 "use client";
-
 import useVideo from "@/src/hooks/useVideo";
 import { Button } from "./ui/button";
 import { UploadButton } from "./UploadFile";
+import useSlidesShowStore from "@/src/store/slidesStore";
+import ImageSlider from "./ImageSlider";
 
 const VideoComponent = () => {
   const {
@@ -18,9 +19,17 @@ const VideoComponent = () => {
     isScreenSharing,
   } = useVideo();
   console.log("screeenref", isScreenSharing);
+  const { isShowSlides } = useSlidesShowStore();
 
+  console.log("isShow", isShowSlides);
   return (
     <div className="h-screen w-screen relative overflow-hidden">
+      {isShowSlides && (
+        <div className="h-screen w-screen z-40">
+          <ImageSlider />
+        </div>
+      )}
+
       <video
         ref={screenRef}
         autoPlay
