@@ -19,41 +19,54 @@ const VideoComponent = () => {
   console.log("screeenref", isScreenSharing);
 
   return (
-    <div>
-      <video ref={screenRef} autoPlay muted playsInline />
-      <audio ref={audioRef} muted={true} autoPlay />
-
+    <div className="h-screen w-screen relative overflow-hidden">
       <video
-        ref={videoRef}
+        ref={screenRef}
         autoPlay
         muted
         playsInline
-        className="bg-black h-screen"
+        className={`${isScreenSharing ? "h-full w-full absolute" : "hidden"}`}
       />
 
-      <div>
-        <div>
-          <>
-            <Button
-              onClick={handleCameraToggle}
-              variant={!publishVideo ? "destructive" : "default"}
-            >
-              Camera
-            </Button>
-            <Button
-              onClick={handleMicrophoneToggle}
-              variant={!publishAudio ? "destructive" : "default"}
-            >
-              Microphone
-            </Button>
-            <Button
-              onClick={handleShareScreenToggle}
-              variant={!publishScreen ? "destructive" : "default"}
-            >
-              Share screeen
-            </Button>
-          </>
-        </div>
+      <audio ref={audioRef} autoPlay />
+
+      <div
+        className={`${
+          isScreenSharing ? "absolute z-10 top-5 right-5" : "relative"
+        }`}
+      >
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          playsInline
+          className={`${
+            isScreenSharing
+              ? "w-[300px] h-[300px] rounded-md shadow-lg"
+              : "h-full w-full bg-black"
+          }`}
+        />
+      </div>
+
+      <div className="absolute bottom-5 left-5 flex space-x-3">
+        <Button
+          onClick={handleCameraToggle}
+          variant={!publishVideo ? "destructive" : "default"}
+        >
+          Camera
+        </Button>
+        <Button
+          onClick={handleMicrophoneToggle}
+          variant={!publishAudio ? "destructive" : "default"}
+        >
+          Microphone
+        </Button>
+        <Button
+          onClick={handleShareScreenToggle}
+          variant={!publishScreen ? "destructive" : "default"}
+        >
+          Share Screen
+        </Button>
       </div>
     </div>
   );
