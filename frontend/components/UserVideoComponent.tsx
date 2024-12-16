@@ -7,14 +7,13 @@ const UserVideoComponent = () => {
   const { audioRef, screenRef, videoRef, loading, isScreenSharing } =
     useUserVideo();
 
-  console.log("isScreenSharing", isScreenSharing);
-
   if (loading) return <div>Loading..</div>;
 
   return (
     <div className="h-screen overflow-hidden w-screen">
       <video
         ref={screenRef}
+        muted
         autoPlay
         playsInline
         className={`${isScreenSharing ? "h-full w-full absolute" : "hidden"}`}
