@@ -8,7 +8,6 @@ import (
 	"reflect"
 	"time"
 	"uncademy-app/handlers"
-	"uncademy-app/internals/data"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,18 +19,14 @@ const (
 )
 
 func (app *Applications) InsertSlides(c *gin.Context) {
-	var slides data.Slides
 
 	metadata := c.PostForm("metadata")
-
-	fmt.Println(slides)
 
 	// Getting file
 	file, err := c.FormFile("file")
 
-	if err != nil {
-		fmt.Println("error", err.Error())
-	}
+	fmt.Print("file", file)
+	fmt.Println("metadata", metadata)
 
 	if err != nil {
 		app.logger.Println(err.Error())
