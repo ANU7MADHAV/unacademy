@@ -9,7 +9,7 @@ const ImageSlider = () => {
   const [imagesUrls, setImagesUrls] = useState<string[]>([]);
   const webSocketRef = useRef<WebSocket | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
-  const {token} = useTokenStore()
+  const { token } = useTokenStore();
 
   useEffect(() => {
     webSocketRef.current = new WebSocket("ws://localhost:8080/ws?id=user123");
@@ -40,9 +40,13 @@ const ImageSlider = () => {
   useEffect(() => {
     const getSlides = async () => {
       try {
-        const res = await axios.post("http://localhost:8080/v1/slides", {
-          metadata: "meta-data1",
-        },{headers : {Authorization : `Bearer ${}`}});
+        const res = await axios.post(
+          "http://localhost:8080/v1/slides",
+          {
+            metadata: "meta-data1",
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
         const resData = res.data;
 
         let urls: string[] = [];
