@@ -1,13 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import {
-  RemoteTrack,
-  Room,
-  RoomEvent,
-  Track,
-  VideoPresets,
-  createLocalTracks,
-} from "livekit-client";
+import { Room, Track, VideoPresets, createLocalTracks } from "livekit-client";
 import { jwtDecode } from "jwt-decode";
 
 export interface Jwt {
@@ -29,8 +22,6 @@ const useVideo = () => {
   const currentRoom = useRef<Room | null>(null);
   const username = useRef<string | null>(null);
 
-  const [room, setRoomId] = useState("");
-  const [token, setToken] = useState("");
   const [publishVideo, setPublishVideo] = useState(true);
   const [publishAudio, setPublishAudio] = useState(true);
   const [publishScreen, setPublishScreeen] = useState(false);
@@ -48,9 +39,6 @@ const useVideo = () => {
           return;
         }
 
-        setToken(liveKit);
-        setRoomId(room);
-
         const decodedJwt = jwtDecode<Jwt>(liveKit);
         username.current = decodedJwt.sub;
         const { canPublish, room: jwtRoom, roomAdmin } = decodedJwt.video;
@@ -67,11 +55,6 @@ const useVideo = () => {
 
         await currentRoom.current.prepareConnection(serverUrl!, liveKit);
         await currentRoom.current.connect(serverUrl!, liveKit);
-
-        currentRoom.current.on(
-          RoomEvent.TrackSubscribed,
-          handleTrackSubscribed
-        );
 
         // Show admin track their self
         if (roomAdmin) {
@@ -98,32 +81,6 @@ const useVideo = () => {
       }
     };
   }, [serverUrl]);
-
-  const handleTrackSubscribed = async (track: RemoteTrack) => {
-    try {
-      if (track.source === "screen_share" && screenRef.current) {
-        screenRef.current.srcObject = new MediaStream([track.mediaStreamTrack]);
-        setIsScreenSharing(true);
-      }
-      if (
-        track.kind === "video" &&
-        track.source === "camera" &&
-        videoRef.current
-      ) {
-        videoRef.current.srcObject = new MediaStream([track.mediaStreamTrack]);
-        console.log("screeenref", videoRef.current.srcObject);
-      }
-      if (
-        track.kind === "audio" &&
-        track.source === "microphone" &&
-        audioRef.current
-      ) {
-        audioRef.current.srcObject = new MediaStream([track.mediaStreamTrack]);
-      }
-    } catch (error) {
-      console.log("Track subscription error:", error);
-    }
-  };
 
   const handleAdminShowTracks = async () => {
     try {
@@ -235,7 +192,6 @@ const useVideo = () => {
     videoRef,
     audioRef,
     screenRef,
-    username: username.current,
     handleCameraToggle,
     handleMicrophoneToggle,
     handleShareScreenToggle,

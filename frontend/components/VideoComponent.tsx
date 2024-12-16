@@ -14,9 +14,7 @@ const VideoComponent = () => {
     publishVideo,
     screenRef,
     videoRef,
-    isScreenSharing,
   } = useVideo();
-  console.log("screeenref", isScreenSharing);
 
   return (
     <div className="h-screen w-screen relative overflow-hidden">
