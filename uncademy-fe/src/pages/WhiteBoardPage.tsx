@@ -1,9 +1,9 @@
-import WhiteBoard from "../components/WhiteBoard";
+import WhiteBoardPublish from "../components/WhiteBoardPublish";
 
 const WhiteBoardPage = () => {
   return (
     <div>
-      <WhiteBoard />
+      <WhiteBoardPublish />
     </div>
   );
 };
