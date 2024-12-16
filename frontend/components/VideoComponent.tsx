@@ -2,6 +2,7 @@
 
 import useVideo from "@/src/hooks/useVideo";
 import { Button } from "./ui/button";
+import { UploadButton } from "./UploadFile";
 
 const VideoComponent = () => {
   const {
@@ -67,6 +68,7 @@ const VideoComponent = () => {
         >
           Share Screen
         </Button>
+        <UploadButton />
       </div>
     </div>
   );
