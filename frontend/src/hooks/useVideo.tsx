@@ -15,7 +15,7 @@ export interface Jwt {
   video: {
     canPublish: boolean;
     room: string;
-    roomAdmin: boolean;
+    roomAdmin?: boolean;
     roomJoin: boolean;
   };
 }
@@ -37,9 +37,6 @@ const useVideo = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
 
-  console.log("token", token);
-  console.log("room", room);
-
   useEffect(() => {
     const initializeRoom = async () => {
       try {
@@ -53,8 +50,6 @@ const useVideo = () => {
 
         setToken(liveKit);
         setRoomId(room);
-
-        if (!liveKit) return;
 
         const decodedJwt = jwtDecode<Jwt>(liveKit);
         username.current = decodedJwt.sub;
@@ -116,6 +111,7 @@ const useVideo = () => {
         videoRef.current
       ) {
         videoRef.current.srcObject = new MediaStream([track.mediaStreamTrack]);
+        console.log("screeenref", videoRef.current.srcObject);
       }
       if (
         track.kind === "audio" &&

@@ -1,43 +1,44 @@
 "use client";
-import useVideo from "@/src/hooks/useVideo";
+import useUserVideo from "@/src/hooks/useUserVideo";
+
 import React from "react";
 
 const UserVideoComponent = () => {
-  const { audioRef, screenRef, videoRef, isLoading, isScreenSharing } =
-    useVideo();
-  console.log("video", isScreenSharing);
+  const { audioRef, screenRef, videoRef, loading, isScreenSharing } =
+    useUserVideo();
 
-  if (isLoading) return <div>Loading..</div>;
+  console.log("isScreenSharing", isScreenSharing);
+
+  if (loading) return <div>Loading..</div>;
 
   return (
-    <div className=" w-full h-full">
-      <div className="relative inset-0 z-10">
-        <video
-          ref={screenRef}
-          autoPlay
-          muted
-          playsInline
-          className={isScreenSharing ? "w-full h-full object-contain" : ""}
-        />
-      </div>
+    <div className="h-screen overflow-hidden w-screen">
+      <video
+        ref={screenRef}
+        autoPlay
+        playsInline
+        className={`${isScreenSharing ? "h-full w-full absolute" : "hidden"}`}
+      />
+
+      <audio ref={audioRef} muted />
 
       <div
-        className={
-          isScreenSharing
-            ? "absolute top-4 right-4 z-20 w-1/4 max-w-[300px]"
-            : "w-screen h-screen"
-        }
+        className={`${
+          isScreenSharing ? "absolute z-10 top-5 right-5" : "relative"
+        }`}
       >
         <video
           ref={videoRef}
           autoPlay
           muted
           playsInline
-          className="w-full h-full object-cover bg-black rounded-lg shadow-lg"
+          className={`${
+            isScreenSharing
+              ? "w-[300px] h-[300px] rounded-md"
+              : "h-full w-full bg-black"
+          }`}
         />
       </div>
-
-      <audio ref={audioRef} muted={false} autoPlay />
     </div>
   );
 };
