@@ -7,7 +7,9 @@ const WhiteBoardPublish = () => {
   const webSocketRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    webSocketRef.current = new WebSocket("ws://localhost:8080/ws");
+    webSocketRef.current = new WebSocket(
+      "ws://localhost:8080/ws/room123?id=user123"
+    );
 
     webSocketRef.current.onopen = () => {
       console.log("connection established");
@@ -31,19 +33,22 @@ const WhiteBoardPublish = () => {
   }, []);
 
   const handleChange = (
-    element: readonly ExcalidrawElement[],
+    elements: readonly ExcalidrawElement[],
     appState: AppState
   ) => {
-    console.log(element, appState);
-    if (webSocketRef.current?.readyState == webSocketRef.current?.OPEN) {
+    console.log(elements, appState);
+
+    if (!webSocketRef.current) return;
+
+    console.log(webSocketRef.current?.OPEN);
+
+    if (webSocketRef.current?.readyState === 1)
       webSocketRef.current?.send(
         JSON.stringify({
-          type: "stroke",
-          stroke: { element, appState },
-          roomid: "room123",
+          type: "sendStroke",
+          stroke: { elements, appState },
         })
       );
-    }
   };
   return (
     <div style={{ height: "1000px" }}>

@@ -10,6 +10,7 @@ import JoinRoomPage from "./pages/JoinRoomPage";
 import CheckRoomPage from "./pages/CheckRoomPage";
 import DashboardPage from "./pages/DashboardPage";
 import UserDashBoardPage from "./pages/UserDashBoardPage";
+import UserWhiteBoard from "./pages/UserWhiteBoard";
 
 const router = createBrowserRouter([
   {
@@ -47,6 +48,10 @@ const router = createBrowserRouter([
   {
     path: "/dashboard/:room",
     element: <UserDashBoardPage />,
+  },
+  {
+    path: "/user/draw",
+    element: <UserWhiteBoard />,
   },
 ]);
 
