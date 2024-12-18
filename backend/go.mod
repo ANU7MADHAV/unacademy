@@ -10,6 +10,7 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/lib/pq v1.10.9 // indirect
 	github.com/livekit/server-sdk-go v1.1.8 // indirect
+	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	github.com/pion/dtls/v3 v3.0.4 // indirect
 	github.com/pion/ice/v4 v4.0.3 // indirect
 	github.com/pion/mdns/v2 v2.0.7 // indirect
@@ -18,6 +19,7 @@ require (
 	github.com/pion/transport/v3 v3.0.7 // indirect
 	github.com/pion/turn/v4 v4.0.0 // indirect
 	github.com/pion/webrtc/v4 v4.0.4 // indirect
+	github.com/segmentio/kafka-go v0.4.47 // indirect
 	github.com/thoas/go-funk v0.9.3 // indirect
 )
 
