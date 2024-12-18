@@ -36,11 +36,12 @@ type redisConfig struct {
 }
 
 type Applications struct {
-	config      config
-	logger      *log.Logger
-	models      data.Models
-	webSocket   WebSocketServer
-	redisClient *redis.Client
+	config                 config
+	logger                 *log.Logger
+	models                 data.Models
+	webSocket              WebSocketServer
+	redisClient            *redis.Client
+	KafkaRecordigRecording *KafkaRecordigRecording
 }
 
 func main() {
@@ -84,12 +85,15 @@ func main() {
 		logger.Fatal(err)
 	}
 
+	kafkaDrawing := NewRecodringDrawing([]string{"localhost:9092"}, "drawing")
+
 	app := &Applications{
-		config:      config,
-		logger:      logger,
-		models:      data.NewModels(db),
-		webSocket:   *wsService,
-		redisClient: redisClient,
+		config:                 config,
+		logger:                 logger,
+		models:                 data.NewModels(db),
+		webSocket:              *wsService,
+		redisClient:            redisClient,
+		KafkaRecordigRecording: kafkaDrawing,
 	}
 
 	router := SetupRoutes(app)

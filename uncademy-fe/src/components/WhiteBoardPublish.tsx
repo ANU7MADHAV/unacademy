@@ -50,6 +50,7 @@ const WhiteBoardPublish = () => {
         })
       );
   };
+
   return (
     <div style={{ height: "1000px" }}>
       <Excalidraw onChange={handleChange} />

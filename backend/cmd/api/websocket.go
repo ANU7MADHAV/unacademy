@@ -1,9 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -35,6 +35,7 @@ type Client struct {
 type WebSocketServer struct {
 	Client map[Client]bool
 	rooms  map[string]map[*Client]bool
+	mu     sync.RWMutex
 }
 
 var upgrade = websocket.Upgrader{
@@ -68,6 +69,7 @@ func (app *Applications) WebsocketHandler(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusBadGateway, gin.H{"error": err.Error()})
+		return
 	}
 
 	client := &Client{
@@ -75,6 +77,10 @@ func (app *Applications) WebsocketHandler(c *gin.Context) {
 		UserId: userId,
 		RoomId: roomId,
 	}
+
+	fmt.Printf("Client Connected: %+v\n", client)
+
+	app.webSocket.mu.RLock()
 
 	roomClients, exists := app.webSocket.rooms[roomId]
 
@@ -84,6 +90,8 @@ func (app *Applications) WebsocketHandler(c *gin.Context) {
 	}
 
 	roomClients[client] = true
+
+	app.webSocket.mu.RUnlock()
 
 	app.webSocket.Client[*client] = true
 
@@ -96,65 +104,64 @@ func (app *Applications) WebsocketHandler(c *gin.Context) {
 			break
 		}
 
-		fmt.Println("message", string(message))
-		if err := app.HandleStrokeMessage(client, message); err != nil {
+		if err := app.HadleStrokeMessage(client, message); err != nil {
 			app.logger.Printf("Error handling stroke message: %v", err)
 		}
 
 	}
 }
 
-func (app *Applications) HandleStrokeMessage(send *Client, message []byte) error {
-	var wsMessage WebSocketMessage
-
-	if err := json.Unmarshal(message, &wsMessage); err != nil {
-		app.logger.Printf("Error parsing stroke message %v", err)
-		return err
-	}
-
-	if wsMessage.Type == "sendStroke" {
-		dummyAppState := wsMessage.STROKE.AppState
-		dummyAppState.Collaborators = []interface{}{}
-		dummyAppState.ViewModelEnabled = true
-
-		broadCasteMessage := WebSocketMessage{
-			Type: "strokeData",
-			STROKE: StrokeData{
-				Elements: wsMessage.STROKE.Elements,
-				AppState: dummyAppState,
-			},
-		}
-
-		fmt.Println("broadcastMessage", broadCasteMessage)
-
-		broadcastData, err := json.Marshal(broadCasteMessage)
-		if err != nil {
-			app.logger.Printf("Error marshaling broadcast message: %v", err)
-			return err
-		}
-
-		fmt.Println("client", send)
-
-		roomClients, exists := app.webSocket.rooms[send.RoomId]
-
-		fmt.Println("client", roomClients)
-
-		if !exists {
-			fmt.Println("error not exist")
-		}
-
-		for client := range roomClients {
-			if client.UserId == send.UserId {
-				continue
-			}
-
-			if err := client.Conn.WriteMessage(websocket.TextMessage, broadcastData); err != nil {
-				fmt.Println("error", err.Error())
-				client.Conn.Close()
-
-			}
-
-		}
-	}
-	return nil
-}
+//
+// func (app *Applications) HandleStrokeMessage(send *Client, message []byte) error {
+// 	var wsMessage WebSocketMessage
+//
+// 	if err := json.Unmarshal(message, &wsMessage); err != nil {
+// 		app.logger.Printf("Error parsing stroke message %v", err)
+// 		return err
+// 	}
+//
+// 	if wsMessage.Type == "sendStroke" {
+// 		dummyAppState := wsMessage.STROKE.AppState
+// 		dummyAppState.Collaborators = []interface{}{}
+// 		dummyAppState.ViewModelEnabled = true
+//
+// 		broadCasteMessage := WebSocketMessage{
+// 			Type: "strokeData",
+// 			STROKE: StrokeData{
+// 				Elements: wsMessage.STROKE.Elements,
+// 				AppState: dummyAppState,
+// 			},
+// 		}
+//
+// 		fmt.Println("broadcastMessage", broadCasteMessage)
+//
+// 		broadcastData, err := json.Marshal(broadCasteMessage)
+// 		if err != nil {
+// 			app.logger.Printf("Error marshaling broadcast message: %v", err)
+// 			return err
+// 		}
+//
+// 		fmt.Println("client", send)
+//
+// 		roomClients, exists := app.webSocket.rooms[send.RoomId]
+//
+// 		fmt.Println("client", roomClients)
+//
+// 		if !exists {
+// 			fmt.Println("error not exist")
+// 		}
+//
+// 		for client := range roomClients {
+// 			if client.UserId == send.UserId {
+// 				continue
+// 			}
+//
+// 			if err := client.Conn.WriteMessage(websocket.TextMessage, broadcastData); err != nil {
+// 				fmt.Println("error", err.Error())
+// 				client.Conn.Close()
+// 			}
+//
+// 		}
+// 	}
+// 	return nil
+// }
