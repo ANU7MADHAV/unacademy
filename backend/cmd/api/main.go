@@ -101,8 +101,8 @@ func main() {
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", config.port),
 		Handler:      router,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		ReadTimeout:  20 * time.Second,
+		WriteTimeout: 20 * time.Second,
 		IdleTimeout:  120 * time.Second,
 	}
 
