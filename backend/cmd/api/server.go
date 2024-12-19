@@ -38,7 +38,7 @@ func SetupRoutes(app *Applications) *gin.Engine {
 
 		v1.POST("/token/create", app.CheckAuth, app.TokenGeneration)
 
-		v1.POST("/event/reply", app.ReplayHandler)
+		v1.GET("/event/replay/:roomId", app.HandleReplay)
 	}
 
 	return r
