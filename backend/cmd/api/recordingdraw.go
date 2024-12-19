@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
-	"github.com/segmentio/kafka-go"
+
+	kafka "github.com/segmentio/kafka-go"
 )
 
 type DrawingEvent struct {
@@ -33,9 +35,10 @@ func NewRecodringDrawing(kafkaBrokers []string, topic string) *KafkaRecordigReco
 	}
 
 	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers: kafkaBrokers,
-		Topic:   topic,
-		GroupID: "drawing-topic",
+		Brokers:   []string{"localhost:9092"},
+		Topic:     "drawing",
+		Partition: 0,
+		MaxBytes:  10e6, // 10MB
 	})
 
 	return &KafkaRecordigRecording{
@@ -59,37 +62,22 @@ func (k *KafkaRecordigRecording) RecordingEvent(event DrawingEvent) error {
 
 }
 
-func (k *KafkaRecordigRecording) ReplyDrawingEvent(roomID string) (<-chan DrawingEvent, error) {
-	err := k.reader.SetOffset(kafka.FirstOffset)
+func (k *KafkaRecordigRecording) ReplyDrawingEvent() {
 
-	if err != nil {
-		fmt.Println("error", err.Error())
+	k.reader.SetOffset(1)
+
+	for {
+		m, err := k.reader.ReadMessage(context.Background())
+		if err != nil {
+			break
+		}
+		fmt.Printf("message at offset %d: %s = %s\n", m.Offset, string(m.Key), string(m.Value))
 	}
 
-	eventChan := make(chan DrawingEvent)
+	if err := k.reader.Close(); err != nil {
+		log.Fatal("failed to close reader:", err)
+	}
 
-	go func() {
-		defer close(eventChan)
-
-		for {
-			message, err := k.reader.ReadMessage(context.Background())
-
-			if err != nil {
-				break
-			}
-
-			var eventDrawing DrawingEvent
-
-			if err := json.Unmarshal(message.Value, &eventDrawing); err != nil {
-				continue
-			}
-
-			if eventDrawing.RoomID == roomID {
-				eventChan <- eventDrawing
-			}
-		}
-	}()
-	return eventChan, nil
 }
 
 func (app *Applications) HadleStrokeMessage(send *Client, message []byte) error {
@@ -111,8 +99,6 @@ func (app *Applications) HadleStrokeMessage(send *Client, message []byte) error 
 			},
 		}
 
-		fmt.Println("hello-ws", wsMessage)
-
 		go func() {
 
 			if err := app.KafkaRecordigRecording.RecordingEvent(drawingEvent); err != nil {
@@ -131,27 +117,33 @@ func (app *Applications) HadleStrokeMessage(send *Client, message []byte) error 
 				AppState: dummyAppState,
 			},
 		}
-		fmt.Println("broadcastMessage", broadcasteMessage)
+
 		broadcastData, err := json.Marshal(broadcasteMessage)
 
 		if err != nil {
 			fmt.Println("err", err.Error())
 		}
 
-		fmt.Println("broadcast", broadcastData)
-		fmt.Println("client", send)
-
 		app.webSocket.mu.RLock()
 
 		roomClients, exists := app.webSocket.rooms[send.RoomId]
-
-		fmt.Println("roomClients", roomClients)
 
 		if !exists {
 			fmt.Println("error", err.Error())
 		}
 
 		app.webSocket.mu.RUnlock()
+		//
+		// 		events, err := app.KafkaRecordigRecording.ReplyDrawingEvent(send.RoomId)
+		//
+		// 		if err != nil {
+		// 			fmt.Println("error", err.Error())
+		// 		}
+		//
+		// 		for event := range events {
+		// 			fmt.Println("events", event)
+		// 		}
+
 		for client := range roomClients {
 			fmt.Println("client", client)
 			if send.UserId == client.UserId {

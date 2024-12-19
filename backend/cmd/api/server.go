@@ -37,6 +37,8 @@ func SetupRoutes(app *Applications) *gin.Engine {
 		v1.POST("/users/login", app.Login)
 
 		v1.POST("/token/create", app.CheckAuth, app.TokenGeneration)
+
+		v1.POST("/event/reply", app.ReplyHandler)
 	}
 
 	return r
