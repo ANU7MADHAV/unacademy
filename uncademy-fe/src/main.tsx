@@ -11,6 +11,7 @@ import CheckRoomPage from "./pages/CheckRoomPage";
 import DashboardPage from "./pages/DashboardPage";
 import UserDashBoardPage from "./pages/UserDashBoardPage";
 import UserWhiteBoard from "./pages/UserWhiteBoard";
+import ReplayPage from "./pages/ReplayPage";
 
 const router = createBrowserRouter([
   {
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
   {
     path: "/user/draw",
     element: <UserWhiteBoard />,
+  },
+  {
+    path: "/replay",
+    element: <ReplayPage />,
   },
 ]);
 
