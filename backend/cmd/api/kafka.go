@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (app *Applications) ReplyHandler(c *gin.Context) {
+func (app *Applications) ReplayHandler(c *gin.Context) {
 
 	var input struct {
 		ID string `json:"id"`
@@ -18,5 +18,5 @@ func (app *Applications) ReplyHandler(c *gin.Context) {
 
 	fmt.Println("hello id is there", input.ID)
 
-	app.KafkaRecordigRecording.ReplyDrawingEvent()
+	app.KafkaRecordigRecording.ReplayDrawingEvent()
 }
