@@ -1,15 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import axios from "axios";
-import { data } from "react-router";
-
-interface DrawingEvent {
-  id: string;
-  room_id: string;
-  user_id: string;
-  time: string;
-  type: string;
-  Payload: any;
-}
 
 const Replay = () => {
   useEffect(() => {
