@@ -62,7 +62,7 @@ func (k *KafkaRecordigRecording) RecordingEvent(event DrawingEvent) error {
 
 }
 
-func (k *KafkaRecordigRecording) ReplyDrawingEvent() {
+func (k *KafkaRecordigRecording) ReplayDrawingEvent() {
 
 	k.reader.SetOffset(1)
 
@@ -133,16 +133,6 @@ func (app *Applications) HadleStrokeMessage(send *Client, message []byte) error 
 		}
 
 		app.webSocket.mu.RUnlock()
-		//
-		// 		events, err := app.KafkaRecordigRecording.ReplyDrawingEvent(send.RoomId)
-		//
-		// 		if err != nil {
-		// 			fmt.Println("error", err.Error())
-		// 		}
-		//
-		// 		for event := range events {
-		// 			fmt.Println("events", event)
-		// 		}
 
 		for client := range roomClients {
 			fmt.Println("client", client)
