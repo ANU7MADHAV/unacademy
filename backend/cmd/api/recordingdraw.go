@@ -2,25 +2,15 @@ package main
 
 import (
 	"context"
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
-	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 
 	kafka "github.com/segmentio/kafka-go"
 )
-
-type DrawingEvent struct {
-	ID        uuid.UUID `json:"id"`
-	RoomID    string    `json:"room_id"`
-	UserID    string    `json:"user_id"`
-	TimeStamp time.Time `json:"time"`
-	Type      string    `json:"type"`
-	Payload   StrokeData
-}
 
 type KafkaRecordigRecording struct {
 	writer *kafka.Writer
@@ -48,18 +38,41 @@ func NewRecodringDrawing(kafkaBrokers []string, topic string) *KafkaRecordigReco
 
 }
 
-func (k *KafkaRecordigRecording) RecordingEvent(event DrawingEvent) error {
-	jsonEvent, err := json.Marshal(event)
-
+func GenerateRandomBytes(n int) ([]byte, error) {
+	b := make([]byte, n)
+	_, err := rand.Read(b)
 	if err != nil {
-		fmt.Println("error", err.Error())
+		return nil, err
 	}
 
+	return b, nil
+}
+
+func (k *KafkaRecordigRecording) RecordingEvent(event any) error {
+	var jsonEvent []byte
+	var err error
+
+	switch v := event.(type) {
+	case string:
+		jsonEvent = []byte(v)
+	default:
+		jsonEvent, err = json.Marshal(event)
+		if err != nil {
+			return fmt.Errorf("failed to marshal event: %w", err)
+		}
+	}
+
+	b, err := GenerateRandomBytes(32)
+	if err != nil {
+		return fmt.Errorf("failed to generate random bytes: %w", err)
+	}
+
+	fmt.Println("check")
+
 	return k.writer.WriteMessages(context.Background(), kafka.Message{
-		Key:   []byte(event.RoomID),
+		Key:   b,
 		Value: jsonEvent,
 	})
-
 }
 
 func (k *KafkaRecordigRecording) ReplayDrawingEvent() {
@@ -84,70 +97,54 @@ func (app *Applications) HadleStrokeMessage(send *Client, message []byte) error 
 	var wsMessage WebSocketMessage
 
 	if err := json.Unmarshal(message, &wsMessage); err != nil {
-		fmt.Println("error", err.Error())
+		return fmt.Errorf("failed to unmarshal message: %w", err)
 	}
+
 	if wsMessage.Type == "sendStroke" {
-		drawingEvent := DrawingEvent{
-			ID:        uuid.New(),
-			RoomID:    send.RoomId,
-			UserID:    send.UserId,
-			TimeStamp: time.Now(),
-			Type:      "stroke",
-			Payload: StrokeData{
-				Elements: wsMessage.STROKE.Elements,
-				AppState: wsMessage.STROKE.AppState,
-			},
-		}
-
-		go func() {
-
-			if err := app.KafkaRecordigRecording.RecordingEvent(drawingEvent); err != nil {
-				fmt.Println("error", err.Error())
-			}
-		}()
-
 		dummyAppState := wsMessage.STROKE.AppState
 		dummyAppState.Collaborators = []interface{}{}
 		dummyAppState.ViewModelEnabled = true
 
-		broadcasteMessage := WebSocketMessage{
+		broadcastMessage := WebSocketMessage{
 			Type: "strokeData",
 			STROKE: StrokeData{
 				Elements: wsMessage.STROKE.Elements,
 				AppState: dummyAppState,
 			},
 		}
+		fmt.Println("broadcastMessage", broadcastMessage)
 
-		broadcastData, err := json.Marshal(broadcasteMessage)
+		go func() {
+			if err := app.KafkaRecordigRecording.RecordingEvent(broadcastMessage); err != nil {
+				log.Printf("Failed to record event to Kafka: %v", err)
+			}
+		}()
 
+		broadcastData, err := json.Marshal(broadcastMessage)
 		if err != nil {
-			fmt.Println("err", err.Error())
+			return fmt.Errorf("failed to marshal broadcast message: %w", err)
 		}
 
 		app.webSocket.mu.RLock()
-
 		roomClients, exists := app.webSocket.rooms[send.RoomId]
 
 		if !exists {
-			fmt.Println("error", err.Error())
+			app.webSocket.mu.RUnlock()
+			return fmt.Errorf("room %s not found", send.RoomId)
 		}
-
 		app.webSocket.mu.RUnlock()
 
 		for client := range roomClients {
-			fmt.Println("client", client)
 			if send.UserId == client.UserId {
 				continue
 			}
 
 			if err := client.Conn.WriteMessage(websocket.TextMessage, broadcastData); err != nil {
-				fmt.Println("err", err.Error())
+				log.Printf("Failed to write to websocket: %v", err)
 				client.Conn.Close()
 			}
-
 		}
 	}
 
 	return nil
-
 }
