@@ -16,8 +16,6 @@ export interface Jwt {
 const useVideo = () => {
   const serverUrl = import.meta.env.VITE_LIVEKIT_URL;
 
-  console.log("serverUrl", serverUrl);
-
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const screenRef = useRef<HTMLVideoElement | null>(null);
@@ -54,9 +52,6 @@ const useVideo = () => {
             resolution: VideoPresets.h720.resolution,
           },
         });
-
-        console.log("url", serverUrl);
-        console.log("token", liveKit);
 
         await currentRoom.current.prepareConnection(serverUrl!, liveKit);
         await currentRoom.current.connect(serverUrl!, liveKit);
@@ -121,7 +116,7 @@ const useVideo = () => {
       await currentRoom.current?.localParticipant.publishTrack(videoTracks[0], {
         name: "videoTrack",
         simulcast: true,
-        source: Track.Source.Camera,
+        source: Track.Source.ScreenShare,
       });
 
       if (!(audioRef.current?.srcObject instanceof MediaStream)) return;
