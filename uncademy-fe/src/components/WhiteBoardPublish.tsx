@@ -36,11 +36,7 @@ const WhiteBoardPublish = () => {
     elements: readonly ExcalidrawElement[],
     appState: AppState
   ) => {
-    console.log(elements, appState);
-
     if (!webSocketRef.current) return;
-
-    console.log(webSocketRef.current?.OPEN);
 
     if (webSocketRef.current?.readyState === 1)
       webSocketRef.current?.send(
@@ -52,7 +48,7 @@ const WhiteBoardPublish = () => {
   };
 
   return (
-    <div style={{ height: "1000px" }}>
+    <div className="h-full w-screen">
       <Excalidraw onChange={handleChange} />
     </div>
   );

@@ -21,8 +21,6 @@ const WhiteBoardSubscribe = () => {
   const [excalidrawAPI, setExcalidrawAPI] =
     useState<ExcalidrawImperativeAPI | null>(null);
   const [replayEvents, setReplayEvents] = useState([]);
-  // const [currentElement, setCurrentElement] = useState([]);
-  // const [currentAppState, setCurrentAppState] = useState({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isReplaying, setIsReplaying] = useState(false);
@@ -46,11 +44,6 @@ const WhiteBoardSubscribe = () => {
 
         if (validateElements.length > 0) {
           const initialEvent = validateElements[0];
-          // setCurrentElement(initialEvent.stroke.elements);
-          // setCurrentAppState({
-          //   ...initialEvent.stroke.appState,
-          //   viewBackgroundColor: "#ffffff",
-          // });
         }
       } catch (error) {
         console.log("error", error);
@@ -71,11 +64,6 @@ const WhiteBoardSubscribe = () => {
 
             if (nextEvent.stroke.elements) {
               const element = nextEvent.stroke.elements;
-              // setCurrentElement(element);
-              // setCurrentAppState({
-              //   ...nextEvent.stroke.appState,
-              //   viewBackgroundColor: "#ffffff",
-              // });
               excalidrawAPI?.updateScene({
                 elements: element,
                 appState: {
@@ -112,7 +100,6 @@ const WhiteBoardSubscribe = () => {
         const data = JSON.parse(message.data);
         console.log("Parsed data:", data);
 
-        // Change this condition to match the backend message type
         if (data.type === "strokeData" && excalidrawAPI) {
           console.log("Updating scene with:", data.stroke);
           excalidrawAPI.updateScene({
@@ -151,11 +138,6 @@ const WhiteBoardSubscribe = () => {
     if (replayEvents.length > 0) {
       const firstElement = replayEvents[0];
       const element = firstElement.stroke.elements;
-      // setCurrentElement(element);
-      // setCurrentAppState({
-      //   ...firstElement.stroke.elements,
-      //   viewBackgroundColor: "#ffffff",
-      // });
 
       excalidrawAPI?.updateScene({
         elements: element,
@@ -194,7 +176,7 @@ const WhiteBoardSubscribe = () => {
   return (
     <div className="h-screen w-screen flex flex-col">
       <div className="flex justify-center gap-2">
-        {!isPlaying && (
+        {!isReplaying && (
           <button
             onClick={handleToggle}
             className="bg-blue-500 text-white px-2 py-1 rounded-md"
@@ -202,13 +184,13 @@ const WhiteBoardSubscribe = () => {
             Start replay
           </button>
         )}
-        {isPlaying && (
+        {isReplaying && (
           <section>
             <button
               onClick={handlePause}
               className="bg-blue-400 text-white px-2 py-1 rounded-md"
             >
-              Pause
+              {isPlaying ? "Pause" : "continue"}
             </button>
             <button
               onClick={handleReset}
