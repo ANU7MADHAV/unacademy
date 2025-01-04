@@ -44,6 +44,7 @@ func LivitKitTokenGeneration(input Token, models *data.Models) (string, error) {
 		Room:       input.Room,
 		RoomAdmin:  admin,
 		CanPublish: &publishdata,
+		RoomRecord: true,
 	}
 
 	uuid := uuid.New()

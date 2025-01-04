@@ -1,6 +1,12 @@
-"use client";
 import { useEffect, useRef, useState } from "react";
-import { Room, Track, VideoPresets, createLocalTracks } from "livekit-client";
+import {
+  RemoteTrack,
+  Room,
+  RoomEvent,
+  Track,
+  VideoPresets,
+  createLocalTracks,
+} from "livekit-client";
 import { jwtDecode } from "jwt-decode";
 
 export interface Jwt {
@@ -8,13 +14,13 @@ export interface Jwt {
   video: {
     canPublish: boolean;
     room: string;
-    roomAdmin?: boolean;
+    roomAdmin: boolean;
     roomJoin: boolean;
   };
 }
 
 const useVideo = () => {
-  const serverUrl = import.meta.env.VITE_LIVEKIT_URL;
+  const serverUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL;
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -22,15 +28,20 @@ const useVideo = () => {
   const currentRoom = useRef<Room | null>(null);
   const username = useRef<string | null>(null);
 
+  const [roomId, setRoomId] = useState("");
+  const [token, setToken] = useState("");
   const [publishVideo, setPublishVideo] = useState(true);
   const [publishAudio, setPublishAudio] = useState(true);
   const [publishScreen, setPublishScreeen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [videoTrackId, setVideoTrackId] = useState<string>();
 
   useEffect(() => {
     const initializeRoom = async () => {
       try {
+        const serverUrl = import.meta.env.VITE_LIVEKIT_URL;
+        console.log("serverUrl");
         const liveKit = localStorage.getItem("livekit-token");
         const room = localStorage.getItem("room");
 
@@ -38,6 +49,11 @@ const useVideo = () => {
           setIsLoading(false);
           return;
         }
+
+        setToken(liveKit);
+        setRoomId(room);
+
+        if (!liveKit) return;
 
         const decodedJwt = jwtDecode<Jwt>(liveKit);
         username.current = decodedJwt.sub;
@@ -55,6 +71,11 @@ const useVideo = () => {
 
         await currentRoom.current.prepareConnection(serverUrl!, liveKit);
         await currentRoom.current.connect(serverUrl!, liveKit);
+
+        currentRoom.current.on(
+          RoomEvent.TrackSubscribed,
+          handleTrackSubscribed
+        );
 
         // Show admin track their self
         if (roomAdmin) {
@@ -81,6 +102,31 @@ const useVideo = () => {
       }
     };
   }, [serverUrl]);
+
+  const handleTrackSubscribed = async (track: RemoteTrack) => {
+    try {
+      if (track.source === "screen_share" && screenRef.current) {
+        screenRef.current.srcObject = new MediaStream([track.mediaStreamTrack]);
+        setIsScreenSharing(true);
+      }
+      if (
+        track.kind === "video" &&
+        track.source === "camera" &&
+        videoRef.current
+      ) {
+        videoRef.current.srcObject = new MediaStream([track.mediaStreamTrack]);
+      }
+      if (
+        track.kind === "audio" &&
+        track.source === "microphone" &&
+        audioRef.current
+      ) {
+        audioRef.current.srcObject = new MediaStream([track.mediaStreamTrack]);
+      }
+    } catch (error) {
+      console.log("Track subscription error:", error);
+    }
+  };
 
   const handleAdminShowTracks = async () => {
     try {
@@ -113,10 +159,12 @@ const useVideo = () => {
       if (!(videoRef.current?.srcObject instanceof MediaStream)) return;
 
       const videoTracks = videoRef.current.srcObject.getVideoTracks();
+      const id = videoTracks[0].id;
+      setVideoTrackId(id);
       await currentRoom.current?.localParticipant.publishTrack(videoTracks[0], {
         name: "videoTrack",
         simulcast: true,
-        source: Track.Source.ScreenShare,
+        source: Track.Source.Camera,
       });
 
       if (!(audioRef.current?.srcObject instanceof MediaStream)) return;
@@ -192,6 +240,7 @@ const useVideo = () => {
     videoRef,
     audioRef,
     screenRef,
+    username: username.current,
     handleCameraToggle,
     handleMicrophoneToggle,
     handleShareScreenToggle,
@@ -201,6 +250,7 @@ const useVideo = () => {
     publishScreen,
     isLoading,
     isScreenSharing,
+    videoTrackId,
   };
 };
 
